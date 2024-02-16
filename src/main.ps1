@@ -20,12 +20,18 @@ if($Directories -eq "." -or $Directories -eq "*") {
 foreach($Path in $Directories) {
     $FoundMatches = Get-Content $Path | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_}
     foreach($Match in $FoundMatches.Line) {
-        $IssueTitle = $Match.Trim().Substring($Match.IndexOf(':')+2)
+        $Match = $Match.Trim()
+        $IssueTitle = $Match.Substring(1)
         if($IssueTitle.Length -lt 3) {
             throw "invalid issue name: $IssueTitle"
         }
         if(-not((gh issue list --state all) -like "*$IssueTitle*")) {
             try {
+                Write-Host "Found [$IssueTitle], create issue in repo? (Y/N): " -NoNewline
+                $Response = Read-Host
+                if($Response -ne "Y") {
+                    break
+                }
                 $Reply = gh issue create --title "[Automated] $IssueTitle" --body "Created On: $(Get-Date)"
                 if([System.Uri]::IsWellFormedUriString($Reply, 'Absolute')) {
                     $NewIssueId = $Reply.Substring($Reply.LastIndexOf('/')+1) 
@@ -35,7 +41,7 @@ foreach($Path in $Directories) {
                     Write-Host "Github issue [$IssueTitle] created. ID: $NewIssueID"
                     
                     if(-not($NoUpdateTodo)) {
-                        $NewLine = "#TODO: $IssueTitle (#$NewIssueID)"
+                        $NewLine = "#$IssueTitle (#$NewIssueID)"
                         (Get-Content $Path) -replace $Match, $NewLine | Set-Content $Path -Force
                     }
                 }
@@ -44,7 +50,7 @@ foreach($Path in $Directories) {
                 throw $_
             }
         } elseif((gh issue list --state closed) -like "*$IssueTitle*") {
-            #TODO (#27): Implement checking for closed issues
+            #TODO: Implement checking for closed issues (#27)
             Write-Host "Found [$IssueTitle] in closed state, attempt to clean up TODO's? (Y/N): " -NoNewline
             $Response = Read-Host
             if($Response -ne "Y") {
@@ -59,7 +65,7 @@ foreach($Path in $Directories) {
                 throw $_
             }
         } else {
-            echo "open issue found"
+            echo "open issue found: $IssueTitle"
         }
     }
 }
