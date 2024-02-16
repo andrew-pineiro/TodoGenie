@@ -5,7 +5,7 @@ param (
 )
 try { gh --version > $null } catch { throw "GitHub Powershell Module Not Available"}
 
-$MatchPattern = "^\s*#\s*TODO: (.+)"
+$MatchPattern = "^\s*#\s*TODO\s*: (.+)"
 $NewCount = 0
 $CloseCount = 0
 
@@ -24,8 +24,7 @@ foreach($Path in $Directories) {
         if($IssueTitle.Length -lt 3) {
             throw "invalid issue name: $IssueTitle"
         }
-        if(-not((gh issue list) -like "*$IssueTitle*")) {
-
+        if(-not((gh issue list --state all) -like "*$IssueTitle*")) {
             try {
                 $Reply = gh issue create --title "[Automated] $IssueTitle" --body "Created On: $(Get-Date)"
                 if([System.Uri]::IsWellFormedUriString($Reply, 'Absolute')) {
@@ -33,10 +32,10 @@ foreach($Path in $Directories) {
                     if(-not([int]$NewIssueID)) {
                         throw "invalid issue id $NewIssueID; error occured."
                     }
-                    Write-Host "Github issue ``$IssueTitle`` created. ID: $NewIssueID"
+                    Write-Host "Github issue [$IssueTitle] created. ID: $NewIssueID"
                     
                     if(-not($NoUpdateTodo)) {
-                        $NewLine = "#TODO (#$NewIssueID): $IssueTitle"
+                        $NewLine = "#TODO: $IssueTitle (#$NewIssueID)"
                         (Get-Content $Path) -replace $Match, $NewLine | Set-Content $Path -Force
                     }
                 }
@@ -44,16 +43,25 @@ foreach($Path in $Directories) {
             } catch {
                 throw $_
             }
-
-
-
-        } else {
+        } elseif((gh issue list --state closed) -like "*$IssueTitle*") {
             #TODO (#27): Implement checking for closed issues
+            Write-Host "Found [$IssueTitle] in closed state, attempt to clean up TODO's? (Y/N): " -NoNewline
+            $Response = Read-Host
+            if($Response -ne "Y") {
+                break
+            }
+            
+            try {
+                (Get-Content $Path) -replace $Match, $null | Set-Content $Path -Force
+                Write-Host "Removed [$Match] from $Path"
+                $CloseCount++
+            } catch {
+                throw $_
+            }
+        } else {
+            echo "open issue found"
         }
     }
-}
-$Path | ForEach-Object {
-    
 }
 
 if($NewCount + $CloseCount -eq 0) {
