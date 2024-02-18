@@ -1,38 +1,39 @@
 [CmdletBinding()]
 param (
-    [string[]] $Directories = ".",
+    [string] $RootDirectory = $PWD,
     [switch] $NoUpdateTodo
 )
+
+Push-Location $RootDirectory
 try { gh --version > $null } catch { throw "GitHub Powershell Module Not Available"}
 
-$MatchPattern = "^\s*#\s*TODO\s*: (.+)"
+$MatchPattern = "TODO:\s*(.+)"
+$GitModuleURL = "https://github.com/andrew-pineiro/PSIssueCreator/"
 $NewCount = 0
 $CloseCount = 0
-
-if($Directories.Count -le 0) {
-    throw "not enough arguments supplied"
-}
-
-if($Directories -eq "." -or $Directories -eq "*") {
-    $Directories = (Get-ChildItem -Recurse $PWD | Where-Object {$_.PSIsContainer -eq $false}).FullName
-}
-
-foreach($Path in $Directories) {
-    $FoundMatches = Get-Content $Path | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_}
-    foreach($Match in $FoundMatches.Line) {
-        $Match = $Match.Trim()
-        $IssueTitle = $Match.Substring(1)
-        if($IssueTitle.Length -lt 3) {
+$Items = (Get-ChildItem -Recurse $RootDirectory | Where-Object {$_.PSIsContainer -eq $false -and $_.Name -ne ".git"}).FullName
+foreach($Item in $Items) {
+    $FoundMatches = Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_}
+    foreach($Match in $FoundMatches.Matches) {
+        $IssueTitle = $Match.Groups[1].Value.ToString().Trim()
+        if($IssueTitle.Length -lt 1) {
             throw "invalid issue name: $IssueTitle"
+        }
+        if($IssueTitle -match ".+\(#\d+\)") {
+            $IssueTitle = $IssueTitle.Substring(0,$IssueTitle.LastIndexOf('#')-1).Trim()
         }
         if(-not((gh issue list --state all) -like "*$IssueTitle*")) {
             try {
+                $NewCount++
                 Write-Host "Found [$IssueTitle], create issue in repo? (Y/N): " -NoNewline
                 $Response = Read-Host
                 if($Response -ne "Y") {
                     break
                 }
-                $Reply = gh issue create --title "[Automated] $IssueTitle" --body "Created On: $(Get-Date)"
+                Write-Host "Any additional body notes?: " -NoNewline
+                $Comments = Read-Host
+                $Body = "**Created On:** $(Get-Date)  <br />**Created By:** [PSIssueModule]($GitModuleURL) <br /><br />**Additional Comments:** $Comments"
+                $Reply = gh issue create --title "[Automated] $IssueTitle" --body $Body
                 if([System.Uri]::IsWellFormedUriString($Reply, 'Absolute')) {
                     $NewIssueId = $Reply.Substring($Reply.LastIndexOf('/')+1) 
                     if(-not([int]$NewIssueID)) {
@@ -41,35 +42,36 @@ foreach($Path in $Directories) {
                     Write-Host "Github issue [$IssueTitle] created. ID: $NewIssueID"
                     
                     if(-not($NoUpdateTodo)) {
-                        $NewLine = "#$IssueTitle (#$NewIssueID)"
-                        (Get-Content $Path) -replace $Match, $NewLine | Set-Content $Path -Force
+                        $NewLine = "$($Match.Value) (#$NewIssueID)"
+                        (Get-Content $Item) -replace $($Match.Value), $NewLine | Set-Content $Item -Force
                     }
                 }
-                $NewCount++
             } catch {
+                Pop-Location
                 throw $_
             }
         } elseif((gh issue list --state closed) -like "*$IssueTitle*") {
-            #TODO: Implement checking for closed issues (#27)
-            Write-Host "Found [$IssueTitle] in closed state, attempt to clean up TODO's? (Y/N): " -NoNewline
+            $CloseCount++
+            Write-Host "Found [$IssueTitle] in closed state, attempt to clean up TODO? (Y/N): " -NoNewline
             $Response = Read-Host
             if($Response -ne "Y") {
                 break
             }
             
             try {
-                (Get-Content $Path) -replace $Match, $null | Set-Content $Path -Force
-                Write-Host "Removed [$Match] from $Path"
-                $CloseCount++
+                (Get-Content $Item) -replace $($Match.Value), $null | Set-Content $Item -Force
+                Write-Host "Removed [$IssueTitle] from $Item"
             } catch {
+                Pop-Location
                 throw $_
             }
         } else {
-            echo "open issue found: $IssueTitle"
+            Write-Debug "open issue found: $IssueTitle"
         }
     }
+    Pop-Location
 }
 
 if($NewCount + $CloseCount -eq 0) {
-    Write-Host "No updated TODO's found"
+    Write-Host "no results"
 }
