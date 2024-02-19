@@ -1,10 +1,9 @@
 # PSIssueCreator
 
 ## Purpose
-Generate GitHub issues based off of your commented TODO's, natively in Windows.
+Generate GitHub issues based off of your commented TODO's, natively in Windows. Works for all programming style comments. 
 
-This will likely also work in Linux but needs to be tested.
-
+Only tested in Windows operating system.
 
 ## Setup
 
