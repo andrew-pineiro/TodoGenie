@@ -4,8 +4,10 @@ $moduleName = $PSScriptRoot.Split($directorySeparator)[-1]
 $moduleManifest = $PSScriptRoot + $directorySeparator + $moduleName + '.psd1'
 $publicFunctionsPath = $PSScriptRoot + $directorySeparator + 'Public' + $directorySeparator
 $privateFunctionsPath = $PSScriptRoot + $directorySeparator + 'Private' + $directorySeparator
+$resourcesPath = $PSScriptRoot + $directorySeparator + 'Resources' + $directorySeparator
 $currentManifest = Test-ModuleManifest $moduleManifest
 $secretsPath = "$($Env:USERPROFILE)\.issueCreator\secrets.json"
+$ExtensionList = Get-Content "$resourcesPath\ExtensionList.csv"
 
 $aliases = @()
 $publicFunctions = Get-ChildItem -Path $publicFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
