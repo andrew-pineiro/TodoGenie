@@ -5,23 +5,32 @@ function Invoke-IssueCreator {
         [switch] $NoUpdateTodo
     )
     if(-not(Test-Path "$RootDirectory\.git")) {
-        throw "no valid .git directory found in $RootDirectory"
+        Write-Error "no valid .git directory found in $RootDirectory"
+        break 1
     }
 
     $MatchPattern = "TODO:\s*(.+)"
     $NewCount = 0
     $CloseCount = 0
-    $Items = (Get-ChildItem -Recurse $RootDirectory | Where-Object {$_.PSIsContainer -eq $false -and $_.Name -ne ".git"}).FullName
-
+    $Items = (Get-ChildItem -Recurse $RootDirectory | Where-Object {
+        $_.PSIsContainer -eq $false -and 
+        $_.Name -ne ".git" -and
+        $_.Extension -in $ExtensionList
+        }).FullName
     foreach($Item in $Items) {
+        Write-Debug "Checking $Item"
         $FoundMatches = Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_}
         foreach($Match in $FoundMatches.Matches) {
+            Write-Debug "Found Match $Match"
             $IssueTitle = $Match.Groups[1].Value.ToString().Trim()
             if($IssueTitle.Length -lt 1) {
-                throw "invalid issue name: $IssueTitle"
+                Write-Error "invalid issue name: $IssueTitle"
+                break 1
             }
             $Issue = Get-GitIssue $IssueTitle $RootDirectory
+            
             if($Issue) {
+                Write-Debug "Found Issue in Github ID: $($Issue.number)"
                 If($Issue.state -eq "closed") {
                     $CloseCount++
                     Write-Host "Found [$IssueTitle] in closed state, attempt to cleanup TODO's? (Y/N): " -NoNewline
@@ -49,7 +58,8 @@ function Invoke-IssueCreator {
                         (Get-Content $Item) -replace $($Match.Value), $NewLine | Set-Content $Item -Force
                     }
                 } else {
-                    throw "error in ``New-GitIssue`` response"
+                    Write-Error "error in ``New-GitIssue`` response"
+                    break 1
                 }
 
             }

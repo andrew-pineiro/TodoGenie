@@ -6,13 +6,15 @@ function Get-GitIssue {
     )
     $ApiKey = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String((Get-content $secretsPath | ConvertFrom-Json).GithubApiKey))
     if(-not($ApiKey) -or $ApiKey -eq "") {
-        throw "invalid apiKey or apiKey not found."
+        Write-Error "invalid apiKey or apiKey not found."
+        break 1
     }
     $GitData = (Get-Content "$RootDirectory\.git\config" | select-string "url = https://github.com/(.+)/(.+).git").Matches
     $RepoName = $GitData.Groups[2].Value
     $OwnerName = $GitData.Groups[1].Value
     if($RepoName -eq "" -or $null -eq $RepoName -or $OwnerName -eq "" -or $null -eq $OwnerName) {
-        throw "invalid repository name or owner name"
+        Write-Error "invalid repository name or owner name"
+        break 1
     }
     $BaseUri = "https://api.github.com/repos/$OwnerName/$RepoName/issues"
     $Headers = @{
@@ -26,7 +28,8 @@ function Get-GitIssue {
             try {
                 $Response = Invoke-RestMethod -Uri "$BaseUri/$IssueID" -Headers $Headers -Method Get
             } catch {
-                throw $_
+                Write-Error $_
+                break 1
             }
             return $Response
         }
@@ -34,7 +37,8 @@ function Get-GitIssue {
         try {
             $Response = Invoke-RestMethod -Uri $BaseUri -Headers $Headers -Method Get
         } catch {
-            throw $_
+            Write-Error $_
+            break 1
         }
         return ($Response | Where-Object {$_.title -like "*$Issue*"})
     }
