@@ -56,6 +56,6 @@ function Invoke-IssueCreator {
         }
     }
     if($NewCount + $CloseCount -eq 0) {
-        Write-Host "no results"
+        Write-Host "No updated or new TODO's found."
     }
 }
