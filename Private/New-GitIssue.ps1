@@ -7,7 +7,7 @@ function New-GitIssue {
         $Comments
     )
 
-    $ApiKey = (Get-content $secretsPath | ConvertFrom-Json).GithubApiKey
+    $ApiKey = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String((Get-content $secretsPath | ConvertFrom-Json).GithubApiKey))
     if(-not($ApiKey) -or $ApiKey -eq "") {
         throw "invalid apiKey or apiKey not found."
     }
