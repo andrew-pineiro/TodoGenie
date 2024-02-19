@@ -54,12 +54,20 @@ if ($functionsAdded -or $functionsRemoved -or $aliasesAdded -or $aliasesRemoved)
 }
 
 if(-not(Test-Path $SecretsPath)) {
-    New-Item "$($Env:USERPROFILE)\.issueCreator" -ItemType:Directory -ErrorAction:SilentlyContinue
-    New-Item $SecretsPath -ErrorAction:Stop
-    Write-Host "Enter Github ApiKey: " -NoNewline
-    $Apikey = Read-Host -MaskInput
-    $JsonData = @{
-        "GithubApiKey" = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Apikey))
-    } | ConvertTo-Json
-    $JsonData > $SecretsPath
+    try {
+            New-Item "$($Env:USERPROFILE)\.issueCreator" -ItemType:Directory -ErrorAction:SilentlyContinue
+            New-Item $SecretsPath -ErrorAction:Stop
+        
+            Write-Host "Enter Github ApiKey: " -NoNewline
+            $Apikey = Read-Host -MaskInput
+        
+            $JsonData = @{
+                "GithubApiKey" = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Apikey))
+            } | ConvertTo-Json
+        
+            $JsonData > $SecretsPath
+    }
+    catch {
+        throw $_
+    }
 }
