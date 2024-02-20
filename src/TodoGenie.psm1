@@ -6,8 +6,10 @@ $publicFunctionsPath = $PSScriptRoot + $directorySeparator + 'Public' + $directo
 $privateFunctionsPath = $PSScriptRoot + $directorySeparator + 'Private' + $directorySeparator
 $resourcesPath = $PSScriptRoot + $directorySeparator + 'Resources' + $directorySeparator
 $currentManifest = Test-ModuleManifest $moduleManifest
-$secretsPath = "$($Env:USERPROFILE)\.issueCreator\secrets.json"
+$secretsPath = "$($Env:USERPROFILE)\.TodoGenie\secrets.json"
 $ExtensionList = Get-Content "$resourcesPath\ExtensionList.csv"
+
+Set-Alias igen Invoke-Genie
 
 $aliases = @()
 $publicFunctions = Get-ChildItem -Path $publicFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
