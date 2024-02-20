@@ -4,7 +4,7 @@ function Get-GitIssue {
         $Issue,
         $RootDirectory = $PWD
     )
-    $ApiKey = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String((Get-content $secretsPath | ConvertFrom-Json).GithubApiKey))
+    $ApiKey = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String((Get-content ($secretsPath + $directorySeparator + $secretsFile) | ConvertFrom-Json).GithubApiKey))
     if(-not($ApiKey) -or $ApiKey -eq "") {
         Write-Error "invalid apiKey or apiKey not found."
         break 1
