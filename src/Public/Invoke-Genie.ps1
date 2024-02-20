@@ -1,4 +1,4 @@
-function Invoke-IssueCreator {
+function Invoke-Genie {
     [CmdletBinding()]
     param (
         [string] $RootDirectory = $PWD,
