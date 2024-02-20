@@ -4,7 +4,7 @@ function Invoke-Genie {
         [string] $RootDirectory = $PWD,
         [switch] $NoUpdateTodo
     )
-    if(-not(Test-Path "$RootDirectory\.git")) {
+    if(-not(Test-Path ($RootDirectory + $directorySeparator + ".git"))) {
         Write-Error "no valid .git directory found in $RootDirectory"
         break 1
     }

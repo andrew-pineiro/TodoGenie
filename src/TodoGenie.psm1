@@ -40,7 +40,6 @@ if ($functionsAdded -or $functionsRemoved -or $aliasesAdded -or $aliasesRemoved)
     try {
          $updateModuleManifestParams = @{}
          $updateModuleManifestParams.Add('Path', $moduleManifest)
-         #$updateModuleManifestParams.Add('ErrorAction', 'Stop')
          if ($aliases.Count -gt 0) { $updateModuleManifestParams.Add('AliasesToExport', $aliases) }
          if ($publicFunctions.Count -gt 0) { $updateModuleManifestParams.Add('FunctionsToExport', $publicFunctions.BaseName) }
 

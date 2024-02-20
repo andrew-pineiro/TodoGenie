@@ -9,7 +9,8 @@ function Get-GitIssue {
         Write-Error "invalid apiKey or apiKey not found."
         break 1
     }
-    $GitData = (Get-Content "$RootDirectory\.git\config" | select-string "url = https://github.com/(.+)/(.+).git").Matches
+    $GitData = (Get-Content ($RootDirectory + $directorySeparator + ".git" + $directorySeparator + "config") | 
+                    Select-String "url = https://github.com/(.+)/(.+).git").Matches
     $RepoName = $GitData.Groups[2].Value
     $OwnerName = $GitData.Groups[1].Value
     if($RepoName -eq "" -or $null -eq $RepoName -or $OwnerName -eq "" -or $null -eq $OwnerName) {
