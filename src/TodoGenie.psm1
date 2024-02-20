@@ -4,10 +4,11 @@ $moduleName = $PSScriptRoot.Split($directorySeparator)[-1]
 $moduleManifest = $PSScriptRoot + $directorySeparator + $moduleName + '.psd1'
 $publicFunctionsPath = $PSScriptRoot + $directorySeparator + 'Public' + $directorySeparator
 $privateFunctionsPath = $PSScriptRoot + $directorySeparator + 'Private' + $directorySeparator
-$resourcesPath = $PSScriptRoot + $directorySeparator + 'Resources' + $directorySeparator
+$resourcesPath = $PSScriptRoot + $directorySeparator + 'Resources'
 $currentManifest = Test-ModuleManifest $moduleManifest
-$secretsPath = "$($Env:USERPROFILE)\.issueCreator\secrets.json"
-$ExtensionList = Get-Content "$resourcesPath\ExtensionList.csv"
+$secretsPath = $Env:USERPROFILE + $directorySeparator + ".todogenie"
+$secretsFile = "secrets.json"
+$ExtensionList = Get-Content ($resourcesPath + $directorySeparator + "ExtensionList.csv")
 
 $aliases = @()
 $publicFunctions = Get-ChildItem -Path $publicFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
@@ -37,28 +38,27 @@ $aliasesRemoved = $currentManifest.ExportedAliases.Keys | Where-Object {$_ -noti
 if ($functionsAdded -or $functionsRemoved -or $aliasesAdded -or $aliasesRemoved) {
 
     try {
+         $updateModuleManifestParams = @{}
+         $updateModuleManifestParams.Add('Path', $moduleManifest)
+         #$updateModuleManifestParams.Add('ErrorAction', 'Stop')
+         if ($aliases.Count -gt 0) { $updateModuleManifestParams.Add('AliasesToExport', $aliases) }
+         if ($publicFunctions.Count -gt 0) { $updateModuleManifestParams.Add('FunctionsToExport', $publicFunctions.BaseName) }
 
-        $updateModuleManifestParams = @{}
-        $updateModuleManifestParams.Add('Path', $moduleManifest)
-        $updateModuleManifestParams.Add('ErrorAction', 'Stop')
-        if ($aliases.Count -gt 0) { $updateModuleManifestParams.Add('AliasesToExport', $aliases) }
-        if ($publicFunctions.Count -gt 0) { $updateModuleManifestParams.Add('FunctionsToExport', $publicFunctions.BaseName) }
+         Update-ModuleManifest @updateModuleManifestParams
 
-        Update-ModuleManifest @updateModuleManifestParams
+     }
+     catch {
 
-    }
-    catch {
+         Write-Error $_
 
-        $_ | Write-Error
-
-    }
+     }
 
 }
 
 if(-not(Test-Path $SecretsPath)) {
     try {
-            New-Item "$($Env:USERPROFILE)\.issueCreator" -ItemType:Directory -ErrorAction:SilentlyContinue
-            New-Item $SecretsPath -ErrorAction:Stop
+            New-Item $SecretsPath -ItemType:Directory -ErrorAction:SilentlyContinue
+            New-Item ($SecretsPath + $directorySeparator + $secretsFile) -ErrorAction:Stop
         
             Write-Host "Enter Github ApiKey: " -NoNewline
             $Apikey = Read-Host -MaskInput
@@ -73,3 +73,4 @@ if(-not(Test-Path $SecretsPath)) {
         throw $_
     }
 }
+

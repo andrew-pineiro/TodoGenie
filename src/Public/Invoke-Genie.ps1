@@ -1,4 +1,4 @@
-function Invoke-IssueCreator {
+function Invoke-Genie {
     [CmdletBinding()]
     param (
         [string] $RootDirectory = $PWD,
@@ -69,3 +69,5 @@ function Invoke-IssueCreator {
         Write-Host "No updated or new TODO's found."
     }
 }
+
+New-Alias igen Invoke-Genie
