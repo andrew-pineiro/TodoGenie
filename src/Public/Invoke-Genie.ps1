@@ -69,3 +69,5 @@ function Invoke-Genie {
         Write-Host "No updated or new TODO's found."
     }
 }
+
+New-Alias igen Invoke-Genie
