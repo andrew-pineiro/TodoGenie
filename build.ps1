@@ -1,3 +1,4 @@
+#Requires -RunAsAdministrator
 $Separator = [System.IO.Path]::DirectorySeparatorChar
 $ModulePath = $env:ProgramFiles + $Separator + "WindowsPowerShell" + $Separator + "Modules"
 $ModuleName = $PSScriptRoot.Split($Separator)[-1]
