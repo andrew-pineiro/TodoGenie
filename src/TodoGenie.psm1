@@ -6,7 +6,7 @@ $publicFunctionsPath = $PSScriptRoot + $directorySeparator + 'Public' + $directo
 $privateFunctionsPath = $PSScriptRoot + $directorySeparator + 'Private' + $directorySeparator
 $resourcesPath = $PSScriptRoot + $directorySeparator + 'Resources' + $directorySeparator
 $currentManifest = Test-ModuleManifest $moduleManifest
-$secretsPath = "$($Env:USERPROFILE)\.TodoGenie\secrets.json"
+$secretsPath = "$($Env:USERPROFILE)\.todogenie\secrets.json"
 $ExtensionList = Get-Content "$resourcesPath\ExtensionList.csv"
 
 Set-Alias igen Invoke-Genie
@@ -59,7 +59,7 @@ if ($functionsAdded -or $functionsRemoved -or $aliasesAdded -or $aliasesRemoved)
 
 if(-not(Test-Path $SecretsPath)) {
     try {
-            New-Item "$($Env:USERPROFILE)\.issueCreator" -ItemType:Directory -ErrorAction:SilentlyContinue
+            New-Item "$($Env:USERPROFILE)\.todogenie" -ItemType:Directory -ErrorAction:SilentlyContinue
             New-Item $SecretsPath -ErrorAction:Stop
         
             Write-Host "Enter Github ApiKey: " -NoNewline
@@ -75,3 +75,4 @@ if(-not(Test-Path $SecretsPath)) {
         throw $_
     }
 }
+
