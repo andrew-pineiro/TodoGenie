@@ -1,4 +1,12 @@
+[CmdletBinding()]
+param(
+
+)
 #Requires -RunAsAdministrator
+
+if($Debug) {
+    $DebugPreference = 'Continue'
+}
 $Timer = New-Object -TypeName 'System.Diagnostics.Stopwatch'
 $Timer.Start()
 
@@ -21,8 +29,8 @@ try {
     New-Item $ModulePathFull -ItemType Directory | Out-Null
     Write-Debug "Created $ModulePathFull"
 
-    Copy-Item .\src\* $ModulePathFull -Recurse -Force -ErrorAction:Stop
-    Write-Debug "Copying source to $ModulePathFull"
+    Copy-Item "$PSScriptRoot\src\*" $ModulePathFull -Recurse -Force -ErrorAction:Stop
+    Write-Debug "$PSScriptRoot\src\* -> $ModulePathFull"
 
     $Timer.Stop()
     Write-Host "+ Build completed in $($Timer.Elapsed.TotalSeconds) seconds"
