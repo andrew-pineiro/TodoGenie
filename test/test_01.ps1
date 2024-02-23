@@ -1,2 +1,2 @@
-$directorySeparator = [System.IO.Path]::DirectorySeparatorChar
-$PSScriptRoot.Split($directorySeparator)[-1]
+$DebugPreference = 'Continue'
+echo $DebugPreference
