@@ -4,4 +4,4 @@
     TODO: This multiline issue is a test (#52)
 #>
 
-Write-Host "Testing open git issue"
+Write-Host "+ [Test] Open git issue passed"

@@ -2,7 +2,7 @@ function New-GitIssue {
     [CmdletBinding()]
     param(
         $Issue,
-        $RootDirectory = $PWD,
+        $RootDirectory,
         $Label,
         $Comments
     )

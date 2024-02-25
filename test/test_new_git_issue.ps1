@@ -3,4 +3,4 @@
     TODO: This is testing a multi-line comment
 #>
 
-Write-Host "Testing new git issue"
+Write-Host "+ [Test] New git issue passed"
