@@ -15,16 +15,17 @@ function Invoke-Genie {
     $MatchPattern = "TODO:\s*(.+)"
     $NewCount = 0
     $CloseCount = 0
-    $Items = (Get-ChildItem -Recurse $RootDirectory | Where-Object {
-        $_.PSIsContainer -eq $false -and 
-        $_.Name -ne ".git" -and
-        $_.Extension -in $ExtensionList
-        }).FullName
+    
+    Push-Location $GitDirectory
+    $Items = Invoke-Command -ScriptBlock {git ls-files}
 
     foreach($Item in $Items) {
 
         Write-Debug "current File: ``$Item``"
-
+        if(-not(Test-Path $Item)) {
+            Write-Debug "not found: ``$Item``"
+            continue
+        }
         $FoundMatches = Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_}
         
         foreach($Match in $FoundMatches.Matches) {
