@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
-    [switch] $RunTests
+    [switch] $RunTests,
+    [ValidateSet('List','Prune','Create')]
+    [string] $SubCommand = 'List'
 )
 #Requires -RunAsAdministrator
 
@@ -49,10 +51,9 @@ if($RunTests) {
         Write-Debug "running tests"
         $Timer.Reset()
         $Timer.Start()
-        
         Invoke-Command {& pwsh.exe -wd ($PWD).Path -NoLogo -NoProfile -Command {
                 $DebugPreference = 'Continue'
-                Invoke-Genie -SubCommand 'List' -GitDirectory $PWD -AllNo -TestMode -ErrorAction:Stop
+                Invoke-Genie -TestMode -ErrorAction:Stop
         }} -ErrorAction:Stop
         if($LASTEXITCODE -ne 0) {
             break $LASTEXITCODE
