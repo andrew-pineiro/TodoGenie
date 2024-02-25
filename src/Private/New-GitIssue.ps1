@@ -1,9 +1,8 @@
 function New-GitIssue {
     [CmdletBinding()]
     param(
-        $Issue,
         $RootDirectory,
-        $Label,
+        $Issue,
         $Comments
     )
 
@@ -12,7 +11,7 @@ function New-GitIssue {
         Write-Error "invalid apiKey or apiKey not found."
         break 1
     }
-    $GitModuleURL = "https://github.com/andrew-pineiro/PSIssueCreator/"
+    $GitModuleURL = "https://github.com/andrew-pineiro/TodoGenie/"
     $GitData = (Get-Content ($RootDirectory + $directorySeparator + ".git" + $directorySeparator + "config") | 
                         Select-String "url = https://github.com/(.+)/(.+).git").Matches
     $RepoName = $GitData.Groups[2].Value
@@ -29,7 +28,6 @@ function New-GitIssue {
     }
     $Body = @{
         "title" = "[Automated] $Issue"
-        "labels" = $Label
         "body" = "**Created On:** $(Get-Date)  <br />**Created By:** [TodoGenie]($GitModuleURL) <br /><br />**Additional Comments:** <br />$Comments"
     } | ConvertTo-Json
     try {

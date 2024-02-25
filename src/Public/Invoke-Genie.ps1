@@ -1,102 +1,108 @@
 function Invoke-Genie {
     [CmdletBinding()]
     param (
-        [string] $RootDirectory = $PWD,
+        [ValidateSet('List','Prune','Create')]
+        [Parameter(Position=1)][string[]] $SubCommand = "List",
         [string] $GitDirectory = $PWD,
-        [switch] $NoUpdateTodo,
-        [switch] $AllNo
+        [switch] $TestMode,
+        [string] $TestDirectory = "test/"
     )
 
     if(-not(Test-Path ($GitDirectory + $directorySeparator + ".git"))) {
         Write-Error "no valid .git directory found in $GitDirectory"
         break 1
     }
-
-    $MatchPattern = "TODO:\s*(.+)"
-    $NewCount = 0
-    $CloseCount = 0
-    
-    Push-Location $GitDirectory
-    $Items = Invoke-Command -ScriptBlock {git ls-files}
+    if($TestMode) {
+        $SubCommand = 'List','Prune','Create'
+    }
+    $MatchPattern = "^(.*)(TODO)(.*):\s*(.*)$"
+    $IssueList = New-Object System.Collections.ArrayList
+    $directory = switch ($TestMode) {
+        $true { $TestDirectory }
+        default {"*"}
+    }
+    $Items = Invoke-Command -ScriptBlock {git ls-files $directory}
 
     foreach($Item in $Items) {
-
         Write-Debug "current File: ``$Item``"
+
         if(-not(Test-Path $Item)) {
             Write-Debug "not found: ``$Item``"
             continue
         }
-        $FoundMatches = Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_}
         
-        foreach($Match in $FoundMatches.Matches) {
+        foreach($Match in (Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_})) {
+            $LineNumber = $Match.LineNumber
+            $Match = $Match.Matches
+            Write-Debug "match: $($LineNumber): ``$Match``"
+            $IssueStruct = @{
+                Line     = $LineNumber
+                File     = $Item
+                FullLine = $Match.Groups[0].Value
+                Prefix   = $Match.Groups[1].Value
+                Keyword  = $Match.Groups[2].Value 
+                ID       = $null
+                Title    = $Match.Groups[4].Value
+                Body     = ''
+            }
+            
 
-            Write-Debug "match: ``$Match``"
-            
-            $IssueTitle = $Match.Groups[1].Value.ToString().Trim()
-            
-            if($IssueTitle.Length -lt 1) {
+            $IDMatch = $Match.Groups[3].Value
+            if($IDMatch.Length -gt 0) {
+                [int]$IssueStruct.ID = ($IDMatch | Select-String -Pattern "\(#(\d+)\)").Matches.Groups[1].Value
+                Write-debug "id found: ``$($IssueStruct.ID)``"
+            }
+            if($IssueStruct.Title.Length -lt 1) {
                 Write-Error "invalid issue name: $IssueTitle"
                 break 1
             }
-            
-            $Issue = Get-GitIssue $IssueTitle $GitDirectory
-            
-            if($Issue) {
-                Write-Debug "found issue in repo; ID: $($Issue.number)"
-                
-                if($Issue.state -eq "closed") {
-                    $CloseCount++
-                    if($AllNo) {
-                        continue
+            [void]$IssueList.Add($IssueStruct)
+        }
+    }
+    foreach($Command in $SubCommand) {
+        Write-Host "------ $Command ------"
+        if($Command -eq 'List') {
+            $IssueList | ForEach-Object {
+                $Line     = $_.'Line'
+                $File     = $_.'File'
+                $FullLine = $_.'FullLine'
+                Write-Host "+ $($File):$($Line): $FullLine"
+            }
+        } elseif($Command -eq 'Prune') {
+            $AllIssues = Get-AllGitIssues $GitDirectory -State closed 
+            $IssueList | Where-Object {$null -ne $_.'ID'} | ForEach-Object {    
+                $ID = $_.'ID'
+                if($ID -in $AllIssues.number) {
+                    Write-Host "? Found $ID in closed state. Attempt to cleanup? (Y/N): " -NoNewline
+                    $userInput = Read-Host
+                    if($userInput -eq "Y") {
+                        $result = Remove-FileTodo $_
+                        if(-not($result)) {
+                            Write-Error "Couldn't remove TODO from $($_.'File')"
+                            continue
+                        }
                     }
-
-                    Write-Host "Found [$IssueTitle] in closed state, attempt to cleanup file? (Y/N): " -NoNewline
-                    $Ans = Read-Host
-                    if($Ans -ne "Y") {
-                        continue
+                }
+            }
+        } elseif($Command -eq 'Create') {
+            $IssueList | Where-Object {$null -eq $_.'ID'} | ForEach-Object {
+                Write-Host "? Attempt to create new git issue for [$($_.'title')]? (Y/N): " -NoNewline
+                $userInput = Read-Host
+                if($userInput -eq "Y") {
+                    $NewIssueID = New-GitIssue $GitDirectory $($_.'Title') $($_.'Body')
+                    if([int]$NewIssueID) {
+                        $_.'ID' = $NewIssueID
+                        $result = Update-FileTodo $_
+                        if(-not($result)) {
+                            Write-Error "Couldn't update TODO in $($_.'File')"
+                            continue
+                        }
                     }
-
-                    (Get-Content $Item) -replace $($Match.Value), $null | Set-Content $Item -Force
-                } else {
-                    Write-Debug "issue $($Issue.number) is currently open"
                 }
-            } else {
-                $NewCount++
-
-                if($AllNo) {
-                    continue
-                }
-
-                Write-Host "Create Github issue for [$IssueTitle]? (Y/N): " -NoNewline
-                $Ans = Read-Host
-                if($Ans -ne "Y") {
-                    continue
-                }
-
-                Write-Host "Label?: " -NoNewline
-                $Label = Read-Host
-
-                Write-Host "Any additional comments to add?: " -NoNewline
-                $Comments = Read-Host
-
-                $IssueID = New-GitIssue $IssueTitle $GitDirectory $Label $Comments
-                
-                if([int]$IssueID) {
-                    if(-not($NoUpdateTodo) -and -not($IssueTitle -match ".+\(#(\d+)\)")) {
-                        $NewLine = "$($Match.Value) (#$IssueID)"
-                        (Get-Content $Item) -replace $($Match.Value), $NewLine | Set-Content $Item -Force
-                    }
-                } else {
-                    Write-Error "error in ``New-GitIssue`` response"
-                    break 1
-                }
-
             }
         }
     }
-    if($NewCount + $CloseCount -eq 0) {
-        Write-Host "No updated or new TODO's found."
-    }
+    
 }
 
 New-Alias igen Invoke-Genie
