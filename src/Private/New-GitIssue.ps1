@@ -30,7 +30,7 @@ function New-GitIssue {
     $Body = @{
         "title" = "[Automated] $Issue"
         "labels" = $Label
-        "body" = "**Created On:** $(Get-Date)  <br />**Created By:** [PSIssueModule]($GitModuleURL) <br /><br />**Additional Comments:** <br />$Comments"
+        "body" = "**Created On:** $(Get-Date)  <br />**Created By:** [TodoGenie]($GitModuleURL) <br /><br />**Additional Comments:** <br />$Comments"
     } | ConvertTo-Json
     try {
         $Response = Invoke-RestMethod -Uri $BaseUri -Method Post -Headers $Headers -Body $Body
