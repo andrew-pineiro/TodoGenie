@@ -1,8 +1,8 @@
 function Get-GitIssue {
     [Cmdletbinding()]
     param(
-        $Issue,
-        $RootDirectory
+        $RootDirecctory,
+        [Parameter(Mandatory=$true)][int]$IssueID
     )
     $ApiKey = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String((Get-content ($secretsPath + $directorySeparator + $secretsFile) | ConvertFrom-Json).GithubApiKey))
     if(-not($ApiKey) -or $ApiKey -eq "") {
@@ -23,24 +23,13 @@ function Get-GitIssue {
         "Authorization" = "Bearer $ApiKey"
         "X-GitHub-Api-Version" = "2022-11-28"
     }
-    if($Issue -match ".+\(#(\d+)\)") {
-        $IssueID = ($Issue | Select-String -Pattern ".+\(#(\d+)\)").Matches.Groups[1].Value
-        if([int]$IssueID) {
-            try {
-                $Response = Invoke-RestMethod -Uri "$BaseUri/$IssueID" -Headers $Headers -Method Get
-            } catch {
-                Write-Error $_
-                break 1
-            }
-            return $Response
-        }
-    } else {
+    if([int]$IssueID) {
         try {
-            $Response = Invoke-RestMethod -Uri $BaseUri -Headers $Headers -Method Get
+            $Response = Invoke-RestMethod -Uri "$BaseUri/$IssueID" -Headers $Headers -Method Get
         } catch {
             Write-Error $_
             break 1
         }
-        return ($Response | Where-Object {$_.title -like "*$Issue*"})
+        return $Response
     }
 }
