@@ -4,4 +4,4 @@
     TODO: This multiline issue already exists (#49)
 #>
 
-Write-Host "Testing closed git issue"
+Write-Host "+ [Test] Closed git issue passed"

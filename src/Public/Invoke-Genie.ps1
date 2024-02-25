@@ -2,10 +2,13 @@ function Invoke-Genie {
     [CmdletBinding()]
     param (
         [string] $RootDirectory = $PWD,
-        [switch] $NoUpdateTodo
+        [string] $GitDirectory = $PWD,
+        [switch] $NoUpdateTodo,
+        [switch] $AllNo
     )
-    if(-not(Test-Path ($RootDirectory + $directorySeparator + ".git"))) {
-        Write-Error "no valid .git directory found in $RootDirectory"
+
+    if(-not(Test-Path ($GitDirectory + $directorySeparator + ".git"))) {
+        Write-Error "no valid .git directory found in $GitDirectory"
         break 1
     }
 
@@ -17,41 +20,66 @@ function Invoke-Genie {
         $_.Name -ne ".git" -and
         $_.Extension -in $ExtensionList
         }).FullName
+
     foreach($Item in $Items) {
-        Write-Debug "Checking $Item"
+
+        Write-Debug "current File: ``$Item``"
+
         $FoundMatches = Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_}
+        
         foreach($Match in $FoundMatches.Matches) {
-            Write-Debug "Found Match $Match"
+
+            Write-Debug "match: ``$Match``"
+            
             $IssueTitle = $Match.Groups[1].Value.ToString().Trim()
+            
             if($IssueTitle.Length -lt 1) {
                 Write-Error "invalid issue name: $IssueTitle"
                 break 1
             }
-            $Issue = Get-GitIssue $IssueTitle $RootDirectory
+            
+            $Issue = Get-GitIssue $IssueTitle $GitDirectory
             
             if($Issue) {
-                Write-Debug "Found Issue in Github ID: $($Issue.number)"
-                If($Issue.state -eq "closed") {
+                Write-Debug "found issue in repo; ID: $($Issue.number)"
+                
+                if($Issue.state -eq "closed") {
                     $CloseCount++
-                    Write-Host "Found [$IssueTitle] in closed state, attempt to cleanup TODO's? (Y/N): " -NoNewline
+                    if($AllNo) {
+                        continue
+                    }
+
+                    Write-Host "Found [$IssueTitle] in closed state, attempt to cleanup file? (Y/N): " -NoNewline
                     $Ans = Read-Host
                     if($Ans -ne "Y") {
-                        break
+                        continue
                     }
+
                     (Get-Content $Item) -replace $($Match.Value), $null | Set-Content $Item -Force
+                } else {
+                    Write-Debug "issue $($Issue.number) is currently open"
                 }
             } else {
                 $NewCount++
+
+                if($AllNo) {
+                    continue
+                }
+
                 Write-Host "Create Github issue for [$IssueTitle]? (Y/N): " -NoNewline
                 $Ans = Read-Host
                 if($Ans -ne "Y") {
-                    break
+                    continue
                 }
+
                 Write-Host "Label?: " -NoNewline
                 $Label = Read-Host
+
                 Write-Host "Any additional comments to add?: " -NoNewline
                 $Comments = Read-Host
-                $IssueID = New-GitIssue $IssueTitle $RootDirectory $Label $Comments
+
+                $IssueID = New-GitIssue $IssueTitle $GitDirectory $Label $Comments
+                
                 if([int]$IssueID) {
                     if(-not($NoUpdateTodo) -and -not($IssueTitle -match ".+\(#(\d+)\)")) {
                         $NewLine = "$($Match.Value) (#$IssueID)"

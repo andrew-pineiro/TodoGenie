@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-
+    [switch] $RunTests
 )
 #Requires -RunAsAdministrator
 
@@ -33,9 +33,31 @@ try {
     Write-Debug "$PSScriptRoot\src\* -> $ModulePathFull"
 
     $Timer.Stop()
-    Write-Host "+ Build completed in $($Timer.Elapsed.TotalSeconds) seconds"
+    $FirstTimerTotal = $($Timer.Elapsed.TotalSeconds)
+    Write-Host "+ Build completed in $FirstTimerTotal seconds"
 } catch {
     Write-Error "- $_"
     $Timer.Stop()
     break 1
 }
+
+if($RunTests) {
+    try {
+        Write-Debug "running tests"
+        $Timer.Reset()
+        $Timer.Start()
+        
+        Invoke-Command {& pwsh.exe -wd ($PWD).Path -NoLogo -Command {
+                $DebugPreference = 'Continue'
+                Invoke-Genie -RootDirectory ".\test" -GitDirectory $PWD -AllNo
+        }} -ErrorAction:Stop
+        $Timer.Stop()
+        $SecondTimerTotal = $($Timer.Elapsed.TotalSeconds)
+        Write-Host "+ All tests PASSED in $SecondTimerTotal seconds"
+    } catch {
+        Write-Error "- $_"
+        break 1
+    }
+}
+
+Write-Host "+ Total elapsed time: $($FirstTimerTotal + $SecondTimerTotal) seconds"

@@ -1,2 +1,0 @@
-$DebugPreference = 'Continue'
-echo $DebugPreference
