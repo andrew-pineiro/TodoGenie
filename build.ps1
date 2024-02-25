@@ -42,20 +42,24 @@ try {
 }
 
 if($RunTests) {
+    if(-not(Get-Module -name $ModuleName -ListAvailable)) {
+        Write-Host "- $ModuleName not found; skipped tests."
+    }
     try {
         Write-Debug "running tests"
         $Timer.Reset()
         $Timer.Start()
         
-        Invoke-Command {& pwsh.exe -wd ($PWD).Path -NoLogo -Command {
+        Invoke-Command {& pwsh.exe -wd ($PWD).Path -NoLogo -NoProfile -Command {
                 $DebugPreference = 'Continue'
-                Invoke-Genie -RootDirectory ".\test" -GitDirectory $PWD -AllNo
+                Invoke-Genie -RootDirectory ".\test" -GitDirectory $PWD -AllNo -ErrorAction:Stop
+                Write-Host "+ All tests PASSED"
         }} -ErrorAction:Stop
         $Timer.Stop()
         $SecondTimerTotal = $($Timer.Elapsed.TotalSeconds)
-        Write-Host "+ All tests PASSED in $SecondTimerTotal seconds"
     } catch {
         Write-Error "- $_"
+        $Timer.Stop()
         break 1
     }
 }
