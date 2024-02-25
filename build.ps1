@@ -52,9 +52,12 @@ if($RunTests) {
         
         Invoke-Command {& pwsh.exe -wd ($PWD).Path -NoLogo -NoProfile -Command {
                 $DebugPreference = 'Continue'
-                Invoke-Genie -RootDirectory ".\test" -GitDirectory $PWD -AllNo -ErrorAction:Stop
-                Write-Host "+ All tests PASSED"
+                Invoke-Genie -SubCommand 'List' -GitDirectory $PWD -AllNo -TestMode -ErrorAction:Stop
         }} -ErrorAction:Stop
+        if($LASTEXITCODE -ne 0) {
+            break $LASTEXITCODE
+        }
+        Write-Host "+ PASSED" -f Green
         $Timer.Stop()
         $SecondTimerTotal = $($Timer.Elapsed.TotalSeconds)
     } catch {
@@ -63,5 +66,11 @@ if($RunTests) {
         break 1
     }
 }
-
-Write-Host "+ Total elapsed time: $($FirstTimerTotal + $SecondTimerTotal) seconds"
+[System.ConsoleColor] $OutputColor = 
+    switch($FirstTimerTotal + $SecondTimerTotal) {
+    {$_ -gt 5} { "Red" }
+    default { "Green" }
+}
+Write-Host "+ Total elapsed time: " -NoNewline
+Write-Host "$($FirstTimerTotal + $SecondTimerTotal) " -ForegroundColor $OutputColor -NoNewline
+Write-Host "seconds"

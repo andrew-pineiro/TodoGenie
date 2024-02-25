@@ -1,7 +1,7 @@
-#TODO: This issue already exists (#48)
+# TODO(#48): This issue already exists 
 
 <#
-    TODO: This multiline issue already exists (#49)
+    TODO(#49): This multiline issue already exists
 #>
 
 Write-Host "+ [Test] Closed git issue passed"

@@ -1,7 +1,7 @@
-#TODO: This issue is a test (#50)
+# TODO(#50): This issue is a test 
 
 <#
-    TODO: This multiline issue is a test (#52)
+    TODO(#52): This multiline issue is a test 
 #>
 
 Write-Host "+ [Test] Open git issue passed"
