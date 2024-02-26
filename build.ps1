@@ -1,8 +1,7 @@
 [CmdletBinding()]
 param(
     [switch] $RunTests,
-    [ValidateSet('List','Prune','Create')]
-    [string] $SubCommand = 'List'
+    [switch] $NoNewSession
 )
 #Requires -RunAsAdministrator
 
@@ -51,10 +50,15 @@ if($RunTests) {
         Write-Debug "running tests"
         $Timer.Reset()
         $Timer.Start()
-        Invoke-Command {& pwsh.exe -wd ($PWD).Path -NoLogo -NoProfile -Command {
+        if($NoNewSession) {
+            Import-Module TodoGenie
+            Invoke-Genie -TestMode -ErrorAction:Stop
+        } else {
+            Invoke-Command {& pwsh.exe -wd ($PWD).Path -NoLogo -NoProfile -Command {
                 $DebugPreference = 'Continue'
                 Invoke-Genie -TestMode -ErrorAction:Stop
-        }} -ErrorAction:Stop
+            }} -ErrorAction:Stop
+        }
         if($LASTEXITCODE -ne 0) {
             break $LASTEXITCODE
         }
@@ -69,9 +73,10 @@ if($RunTests) {
 }
 [System.ConsoleColor] $OutputColor = 
     switch($FirstTimerTotal + $SecondTimerTotal) {
-    {$_ -gt 5} { "Red" }
-    default { "Green" }
-}
+        {$_ -gt 15} { "Red" }
+        {$_ -ge 10 -and $_ -le 15} { "Yellow" }
+        default { "Green" }
+    }   
 Write-Host "+ Total elapsed time: " -NoNewline
 Write-Host "$($FirstTimerTotal + $SecondTimerTotal) " -ForegroundColor $OutputColor -NoNewline
 Write-Host "seconds"
