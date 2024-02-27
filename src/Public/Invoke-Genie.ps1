@@ -2,23 +2,40 @@ function Invoke-Genie {
     [CmdletBinding()]
     param (
         [ValidateSet('List','Prune','Create')]
-        [Parameter(Position=0,
-            HelpMessage = "Enter one of the subcommands to begin (List, Prune, Create)"
-            )][string[]] $SubCommand,
-        [string] $GitDirectory = $PWD,
+        [Parameter(Position=0, 
+            HelpMessage = "Enter one of the subcommands to begin (List, Prune, Create)")]
+        [Alias('c','cmd','cmds')]
+        [string[]] $SubCommands
+        ,
+        [Parameter(Position=1,
+            HelpMessage = "Directory with the .git folder")]
+        [Alias('d','dir')]
+        [string] $GitDirectory = $PWD
+        ,
+        [Parameter(ParameterSetName = 'TestMode',
+            HelpMessage = 'Enables test mode, which runs through all subcommands in the specified -TestDirectory')]
+        [Alias('t','test')]
+        [switch] $TestMode
+        ,
+        [Parameter(ParameterSetName = 'TestMode',
+            HelpMessage = 'Test directory to run -TestMode in. Defaults to test/')]
+        [Alias('td', 'testdir')]
+        [string] $TestDirectory = "test/"
+        ,
         [Parameter(
-            ParameterSetName = 'TestMode'
-        )][Alias('t')][switch] $TestMode,
+            HelpMessage = 'Avoids commiting the changes to the repo automatically')]
+        [Alias('n')]
+        [switch] $NoAutoCommit
+        ,
         [Parameter(
-            ParameterSetName = 'TestMode'
-        )][string] $TestDirectory = "test/",
-        [switch] $NoAutoCommit,
-        [Alias('h')][switch] $Help
+            HelpMessage = 'Shows the syntax/help message')]
+        [Alias('h')]
+        [switch] $Help
     )
     if($TestMode) {
-        $SubCommand = 'List','Prune','Create'
+        $SubCommands = 'List','Prune','Create'
     }
-    if($Help -or $SubCommand.Count -eq 0) {
+    if($Help -or $SubCommands.Count -eq 0) {
         Show-HelpMessage
         break
     }
@@ -80,7 +97,7 @@ function Invoke-Genie {
         Write-Host "- No TODOs found in $GitDirectory"
         break
     }
-    foreach($Command in $SubCommand) {
+    foreach($Command in $SubCommands) {
         Write-Debug "------ $Command ------"
         if($Command -eq 'List') {
             $IssueList | ForEach-Object {
