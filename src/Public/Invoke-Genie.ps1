@@ -2,20 +2,31 @@ function Invoke-Genie {
     [CmdletBinding()]
     param (
         [ValidateSet('List','Prune','Create')]
-        [Parameter(Position=1)][string[]] $SubCommand = "List",
+        [Parameter(Position=0,
+            HelpMessage = "Enter one of the subcommands to begin (List, Prune, Create)"
+            )][string[]] $SubCommand,
         [string] $GitDirectory = $PWD,
-        [switch] $TestMode,
-        [string] $TestDirectory = "test/",
-        [switch] $NoAutoCommit
+        [Parameter(
+            ParameterSetName = 'TestMode'
+        )][Alias('t')][switch] $TestMode,
+        [Parameter(
+            ParameterSetName = 'TestMode'
+        )][string] $TestDirectory = "test/",
+        [switch] $NoAutoCommit,
+        [Alias('h')][switch] $Help
     )
-
+    if($TestMode) {
+        $SubCommand = 'List','Prune','Create'
+    }
+    if($Help -or $SubCommand.Count -eq 0) {
+        Show-HelpMessage
+        break
+    }
     if(-not(Test-Path ($GitDirectory + $directorySeparator + ".git"))) {
         Write-Error "no valid .git directory found in $GitDirectory"
         break 1
     }
-    if($TestMode) {
-        $SubCommand = 'List','Prune','Create'
-    }
+
     $MatchPattern = "^(.*)(TODO)(.*):\s*(.*)$"
     $IssueList = New-Object System.Collections.ArrayList
     $CommitList = New-Object System.Collections.ArrayList
@@ -49,11 +60,14 @@ function Invoke-Genie {
                 State    = ''
             }
             
-
             $IDMatch = $Match.Groups[3].Value
             if($IDMatch.Length -gt 0) {
-                [int]$IssueStruct.ID = ($IDMatch | Select-String -Pattern "\(#(\d+)\)").Matches.Groups[1].Value
-                Write-debug "id found: ``$($IssueStruct.ID)``"
+                $IDMatch = $IDMatch | Select-String -Pattern "\(#(\d+)\)"
+                if($IDMatch) {
+                    [int]$IssueStruct.ID = $IDMatch.Matches.Groups[1].Value
+                    Write-debug "id found: ``$($IssueStruct.ID)``"
+                }
+                
             }
             if($IssueStruct.Title.Length -lt 1) {
                 Write-Error "invalid issue name: $IssueTitle"
@@ -61,6 +75,10 @@ function Invoke-Genie {
             }
             [void]$IssueList.Add($IssueStruct)
         }
+    }
+    if($IssueList.Count -eq 0) {
+        Write-Host "- No TODOs found in $GitDirectory"
+        break
     }
     foreach($Command in $SubCommand) {
         Write-Debug "------ $Command ------"
