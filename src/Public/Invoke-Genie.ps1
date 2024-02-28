@@ -32,13 +32,16 @@ function Invoke-Genie {
         [Alias('h')]
         [switch] $Help
     )
+
     if($TestMode) {
         $SubCommands = 'List','Prune','Create'
     }
+
     if($Help -or $SubCommands.Count -eq 0) {
         Show-HelpMessage
         break
     }
+
     if(-not(Test-Path ($GitDirectory + $directorySeparator + ".git"))) {
         Write-Error "no valid .git directory found in $GitDirectory"
         break 1
@@ -63,21 +66,21 @@ function Invoke-Genie {
         
         foreach($Match in (Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_})) {
             $LineNumber = $Match.LineNumber
-            $Match = $Match.Matches
+            $Match = $Match.Matches.Groups
             Write-Debug "match: $($LineNumber): ``$Match``"
             $IssueStruct = @{
                 Line     = $LineNumber
                 File     = $Item
-                FullLine = $Match.Groups[0].Value
-                Prefix   = $Match.Groups[1].Value
-                Keyword  = $Match.Groups[2].Value 
+                FullLine = $Match[0].Value
+                Prefix   = $Match[1].Value
+                Keyword  = $Match[2].Value 
                 ID       = $null
-                Title    = $Match.Groups[4].Value
+                Title    = $Match[4].Value
                 Body     = ''
                 State    = ''
             }
             
-            $IDMatch = $Match.Groups[3].Value
+            $IDMatch = $Match[3].Value
             if($IDMatch.Length -gt 0) {
                 $IDMatch = $IDMatch | Select-String -Pattern "\(#(\d+)\)"
                 if($IDMatch) {
@@ -109,12 +112,11 @@ function Invoke-Genie {
         } elseif($Command -eq 'Prune') {
             $AllIssues = Get-AllGitIssues $GitDirectory -State closed 
             $IssueList | Where-Object {$null -ne $_.ID} | ForEach-Object {    
-                $ID = $_.ID
-                if($ID -in $AllIssues.number) {
-                    Write-Host "? Found $ID in closed state. Attempt to cleanup? (Y/N): " -NoNewline
+                if($_.ID -in $AllIssues.number) {
+                    Write-Host "? Found issue #$($_.ID) in closed state. Attempt to cleanup files? (Y/N): " -NoNewline
                     $userInput = Read-Host
-                    $_.State = ($AllIssues | Where-Object {$_.number -eq $ID}).state
                     if($userInput -eq "Y") {
+                        $_.State = ($AllIssues | Where-Object {$_.number -eq $_.ID}).state
                         $result = Remove-FileTodo $_
                         if(-not($result)) {
                             Write-Error "Couldn't remove TODO from $($_.File)"

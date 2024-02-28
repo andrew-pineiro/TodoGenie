@@ -1,4 +1,3 @@
-
 $directorySeparator = [System.IO.Path]::DirectorySeparatorChar
 $moduleName = $PSScriptRoot.Split($directorySeparator)[-1]
 $moduleManifest = $PSScriptRoot + $directorySeparator + $moduleName + '.psd1'
@@ -7,12 +6,11 @@ $privateFunctionsPath = $PSScriptRoot + $directorySeparator + 'Private' + $direc
 $currentManifest = Test-ModuleManifest $moduleManifest
 $secretsPath = $Env:USERPROFILE + $directorySeparator + ".todogenie"
 $secretsFile = "secrets.json"
-
-$aliases = @()
 $publicFunctions = Get-ChildItem -Path $publicFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
 $privateFunctions = Get-ChildItem -Path $privateFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
 $publicFunctions | ForEach-Object { . $_.FullName }
 $privateFunctions | ForEach-Object { . $_.FullName }
+$aliases = @()
 
 $publicFunctions | ForEach-Object { # Export all of the public functions from this module
 
@@ -45,9 +43,8 @@ if ($functionsAdded -or $functionsRemoved -or $aliasesAdded -or $aliasesRemoved)
 
      }
      catch {
-
          Write-Error $_
-
+         break 
      }
 
 }
@@ -59,7 +56,12 @@ if(-not(Test-Path $SecretsPath)) {
         
             Write-Host "Enter Github ApiKey: " -NoNewline
             $Apikey = Read-Host -MaskInput
-        
+
+            if($ApiKey.Length -le 0) {
+                Write-Error "invalid apiKey entered"
+                break 1
+            }
+
             $JsonData = @{
                 "GithubApiKey" = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Apikey))
             } | ConvertTo-Json
@@ -67,7 +69,8 @@ if(-not(Test-Path $SecretsPath)) {
             $JsonData > $($SecretsPath + $directorySeparator + $secretsFile)
     }
     catch {
-        throw $_
+        Write-Error $_
+        break 1
     }
 }
 
