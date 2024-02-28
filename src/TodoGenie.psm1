@@ -64,7 +64,7 @@ if(-not(Test-Path $SecretsPath)) {
                 "GithubApiKey" = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Apikey))
             } | ConvertTo-Json
         
-            $JsonData > $SecretsPath
+            $JsonData > $($SecretsPath + $directorySeparator + $secretsFile)
     }
     catch {
         throw $_
