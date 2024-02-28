@@ -31,7 +31,8 @@ function New-GitIssue {
         "body" = "**Created On:** $(Get-Date)  <br />**Created By:** [TodoGenie]($GitModuleURL) <br /><br />**Additional Comments:** <br />$Comments"
     } | ConvertTo-Json
     try {
-        $Response = Invoke-RestMethod -Uri $BaseUri -Method Post -Headers $Headers -Body $Body
+        $Response = Invoke-RestMethod -Uri $BaseUri -Method Post -Headers $Headers -Body $Body -ResponseHeadersVariable ResponseHeader
+        Write-Debug "Ratelimit attempts remaining: $($ResponseHeader["X-Ratelimit-Remaining"])"
     } catch {
         Write-Error $_
         break 1
