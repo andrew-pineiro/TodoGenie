@@ -44,7 +44,6 @@ if ($functionsAdded -or $functionsRemoved -or $aliasesAdded -or $aliasesRemoved)
      }
      catch {
          Write-Error $_
-         break 
      }
 
 }
@@ -55,15 +54,18 @@ if(-not(Test-Path $SecretsPath)) {
             New-Item ($SecretsPath + $directorySeparator + $secretsFile) -ErrorAction:Stop
         
             Write-Host "Enter Github ApiKey: " -NoNewline
-            $Apikey = Read-Host -MaskInput
+            $Apikey = Read-Host -AsSecureString
+            $EncryptedKey = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(
+                [System.RunTime.InteropServices.Marshal]::PtrToStringAuto(
+                    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Apikey))))
 
             if($ApiKey.Length -le 0) {
                 Write-Error "invalid apiKey entered"
                 break 1
             }
-
+                
             $JsonData = @{
-                "GithubApiKey" = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Apikey))
+                "GithubApiKey" = $EncryptedKey
             } | ConvertTo-Json
         
             $JsonData > $($SecretsPath + $directorySeparator + $secretsFile)
