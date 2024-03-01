@@ -15,6 +15,7 @@ $Separator = [System.IO.Path]::DirectorySeparatorChar
 $ModulePath = $env:ProgramFiles + $Separator + "WindowsPowerShell" + $Separator + "Modules"
 $ModuleName = $PSScriptRoot.Split($Separator)[-1]
 $ModulePathFull = $ModulePath + $Separator + $ModuleName + $Separator
+$PSEnvironment = (Get-Process -Id $PID).ProcessName
 Write-Debug "Attempting to use $ModulePath as module directory"
 
 if($ModulePath -notin $env:PSModulePath.Split(';')) {
@@ -54,9 +55,9 @@ if($RunTests) {
             Import-Module TodoGenie
             Invoke-Genie -TestMode -ErrorAction:Stop
         } else {
-            Invoke-Command {& pwsh.exe -wd ($PWD).Path -NoLogo -NoProfile -Command {
-                $DebugPreference = 'Continue'
-                Invoke-Genie -TestMode -ErrorAction:Stop
+            Invoke-Command {& "$PSEnvironment.exe" -NoLogo -NoProfile -Command {
+                Set-Location ($PWD).Path
+                Invoke-Genie -TestMode -ErrorAction:Stop -Debug:$Debug
             }} -ErrorAction:Stop
         }
         if($LASTEXITCODE -ne 0) {

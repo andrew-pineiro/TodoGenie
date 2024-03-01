@@ -31,12 +31,13 @@ function New-GitIssue {
         "body" = "**Created On:** $(Get-Date)  <br />**Created By:** [TodoGenie]($GitModuleURL) <br /><br />**Additional Comments:** <br />$Comments"
     } | ConvertTo-Json
     try {
-        $Response = Invoke-RestMethod -Uri $BaseUri -Method Post -Headers $Headers -Body $Body -ResponseHeadersVariable ResponseHeader
-        Write-Debug "Ratelimit attempts remaining: $($ResponseHeader["X-Ratelimit-Remaining"])"
+        $Response = Invoke-WebRequest -Uri $BaseUri -Method Post -Headers $Headers -Body $Body
+        Write-Debug "Ratelimit attempts remaining: $($Response.Headers["X-Ratelimit-Remaining"])"
     } catch {
         Write-Error $_
         break 1
     }
-    return $Response.number
+    $Response = $Response.Content | ConvertFrom-Json
+    return $Response.Number
 
 }
