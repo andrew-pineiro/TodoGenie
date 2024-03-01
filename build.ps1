@@ -57,8 +57,7 @@ if($RunTests) {
         } else {
             Invoke-Command {& "$PSEnvironment.exe" -NoLogo -NoProfile -Command {
                 Set-Location ($PWD).Path
-                $DebugPreference = 'Continue'
-                Invoke-Genie -TestMode -ErrorAction:Stop
+                Invoke-Genie -TestMode -ErrorAction:Stop -Debug:$Debug
             }} -ErrorAction:Stop
         }
         if($LASTEXITCODE -ne 0) {
