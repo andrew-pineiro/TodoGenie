@@ -107,7 +107,7 @@ function Invoke-Genie {
                 $Line     = $_.Line
                 $File     = $_.File
                 $FullLine = $_.FullLine
-                Write-Host "+ $($File):$($Line): $FullLine"
+                Write-Host "+ $($File):$($Line): $($FullLine.Trim())"
             }
         } elseif($Command -eq 'Prune') {
             $AllIssues = Get-AllGitIssues $GitDirectory -State closed 
