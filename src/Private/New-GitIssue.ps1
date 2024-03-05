@@ -6,11 +6,7 @@ function New-GitIssue {
         $Comments
     )
 
-    $ApiKey = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String((Get-content ($secretsPath + $directorySeparator + $secretsFile) | ConvertFrom-Json).GithubApiKey))
-    if(-not($ApiKey) -or $ApiKey -eq "") {
-        Write-Error "invalid apiKey or apiKey not found."
-        break 1
-    }
+    $ApiKey = Get-ApiKey
     $GitModuleURL = "https://github.com/andrew-pineiro/TodoGenie/"
     $GitData = (Get-Content ($RootDirectory + $directorySeparator + ".git" + $directorySeparator + "config") | 
                         Select-String "url = https://github.com/(.+)/(.+).git").Matches
