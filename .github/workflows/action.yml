@@ -1,0 +1,22 @@
+name: Build and Test TodoGenie
+on: push
+
+jobs:
+    todogenie-build-linux:
+        name: Build TodoGenie on Linux
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Build
+              shell: pwsh
+              run: |
+                ./build.ps1 -Debug
+    todogenie-build-windows:
+        name: Build TodoGenie on Windows
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Build
+              shell: pwsh
+              run: |
+                .\build.ps1 -Debug
