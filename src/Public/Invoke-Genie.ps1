@@ -32,9 +32,8 @@ function Invoke-Genie {
         [Alias('h')]
         [switch] $Help
     )
-
-    if($TestMode) {
-        $SubCommands = 'List','Prune','Create'
+    if($TestMode -and $SubCommands.Count -eq 0) {
+        $SubCommands = 'List', 'Prune', 'Create'
     }
 
     if($Help -or $SubCommands.Count -eq 0) {
@@ -57,8 +56,6 @@ function Invoke-Genie {
     $Items = Invoke-Command -ScriptBlock {git ls-files $directory}
 
     foreach($Item in $Items) {
-        Write-Debug "current file: ``$Item``"
-
         if(-not(Test-Path $Item)) {
             Write-Debug "not found: ``$Item``"
             continue
@@ -67,7 +64,7 @@ function Invoke-Genie {
         foreach($Match in (Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_})) {
             $LineNumber = $Match.LineNumber
             $Match = $Match.Matches.Groups
-            Write-Debug "match: $($LineNumber): ``$Match``"
+            Write-Debug "$($Item):$($LineNumber): ``$($Match[0].Value)``"
             $IssueStruct = @{
                 Line     = $LineNumber
                 File     = $Item
@@ -85,7 +82,7 @@ function Invoke-Genie {
                 $IDMatch = $IDMatch | Select-String -Pattern "\(#(\d+)\)"
                 if($IDMatch) {
                     [int]$IssueStruct.ID = $IDMatch.Matches.Groups[1].Value
-                    Write-debug "id found: ``$($IssueStruct.ID)``"
+                    Write-debug "$($IssueStruct.File):$($IssueStruct.Line): ID FOUND: #$($IssueStruct.ID)"
                 }
                 
             }
@@ -110,10 +107,11 @@ function Invoke-Genie {
                 Write-Host "+ $($File):$($Line): $($FullLine.Trim())"
             }
         } elseif($Command -eq 'Prune') {
+            Write-Debug "Gathering all closed GitHub issues"
             $AllIssues = Get-AllGitIssues $GitDirectory -State closed 
             $IssueList | Where-Object {$null -ne $_.ID} | ForEach-Object {    
                 if($_.ID -in $AllIssues.number) {
-                    Write-Host "? Found issue #$($_.ID) in closed state. Attempt to cleanup files? (Y/N): " -NoNewline
+                    Write-Host "? Found issue #$($_.ID) in closed state. Attempt to cleanup files? (Y/N): " -NoNewline:$(-not($TestMode))
                     if(-not($TestMode)) {
                         $userInput = Read-Host
                         if($userInput -eq "Y") {
@@ -126,12 +124,11 @@ function Invoke-Genie {
                             [void]$CommitList.Add($_)
                         }
                     }
-
-                }
+                } 
             }
         } elseif($Command -eq 'Create') {
             $IssueList | Where-Object {$null -eq $_.ID} | ForEach-Object {
-                Write-Host "? Attempt to create new git issue for [$($_.Title)]? (Y/N): " -NoNewline
+                Write-Host "? Attempt to create new git issue for [$($_.Title)]? (Y/N): " -NoNewline:$(-not($TestMode))
                 if(-not($TestMode)) {
                     $userInput = Read-Host
                     if($userInput -eq "Y") {
@@ -147,7 +144,7 @@ function Invoke-Genie {
                             [void]$CommitList.Add($_)
                         }
                     }
-                }
+                } 
             }
             if($CommitList.Count -gt 0 -and -not($NoAutoCommit)) {
                 Write-Host "+ Pushing $($CommitList.Count) changes to GitHub repository."

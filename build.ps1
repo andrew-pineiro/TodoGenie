@@ -1,5 +1,7 @@
 [CmdletBinding()]
 param(
+    [ValidateSet('List', 'Prune', 'Create')]
+    [string[]] $SubCommands = ('List', 'Prune', 'Create'),
     [switch] $RunTests,
     [switch] $NoNewSession,
     [string] $ApiKey = ""
@@ -68,16 +70,16 @@ if($RunTests) {
     }
 
     try {
-        Write-Debug "running tests"
+        Write-Debug "Starting tests..."
         $Timer.Reset()
         $Timer.Start()
         if($NoNewSession) {
             Import-Module TodoGenie
-            Invoke-Genie -TestMode -ErrorAction:Stop -Debug:$Debug
+            Invoke-Genie $SubCommands -TestMode -ErrorAction:Stop -Debug:$Debug
         } else {
             Invoke-Command {& "$PSEnvironment.exe" -NoLogo -NoProfile -Command {
                 Set-Location ($PWD).Path
-                Invoke-Genie -TestMode -ErrorAction:Stop -Debug:$Debug
+                Invoke-Genie $SubCommands -TestMode -ErrorAction:Stop -Debug:$Debug
             }} -ErrorAction:Stop
         }
         if($LASTEXITCODE -ne 0) {
