@@ -17,8 +17,7 @@ $ModulePath = $env:ProgramFiles + $Separator + "WindowsPowerShell" + $Separator 
 $ModuleName = $PSScriptRoot.Split($Separator)[-1]
 $ModulePathFull = $ModulePath + $Separator + $ModuleName + $Separator
 $PSEnvironment = (Get-Process -Id $PID).ProcessName
-$SecretsPath = $Env:USERPROFILE + $directorySeparator + ".todogenie"
-$directorySeparator = [System.IO.Path]::DirectorySeparatorChar
+$SecretsPath = $Env:USERPROFILE + $Separator + ".todogenie"
 $secretsFile = "secrets.json"
 
 Write-Debug "Attempting to use $ModulePath as module directory"
@@ -57,8 +56,8 @@ if($RunTests) {
         if(Test-Path $SecretsPath) {
             Remove-Item $SecretsPath -Recurse -Force
         }
-        New-Item $SecretsPath -ItemType:Directory
-        New-Item $($SecretsPath + $directorySeparator + $secretsFile)
+        New-Item $SecretsPath -ItemType:Directory > $null
+        New-Item $($SecretsPath + $Separator + $secretsFile) > $null
         $EncryptedKey = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($ApiKey))
         $JsonData = @{
             "GithubApiKey" = $EncryptedKey
