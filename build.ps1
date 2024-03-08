@@ -64,7 +64,7 @@ if($RunTests) {
         } | ConvertTo-Json
         
         $JsonData > $($SecretsPath + $directorySeparator + $secretsFile)
-        Write-Debug "Wrote $JsonData to $($SecretsPath + $Separator + $secretsFile)"
+        Write-Debug "Wrote ApiKey to $($SecretsPath + $Separator + $secretsFile)"
     }
 
     try {
@@ -73,7 +73,7 @@ if($RunTests) {
         $Timer.Start()
         if($NoNewSession) {
             Import-Module TodoGenie
-            Invoke-Genie -TestMode -ErrorAction:Stop
+            Invoke-Genie -TestMode -ErrorAction:Stop -Debug:$Debug
         } else {
             Invoke-Command {& "$PSEnvironment.exe" -NoLogo -NoProfile -Command {
                 Set-Location ($PWD).Path
