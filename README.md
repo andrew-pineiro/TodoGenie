@@ -1,4 +1,6 @@
 # TodoGenie
+[![Build and Test TodoGenie](https://github.com/andrew-pineiro/TodoGenie/actions/workflows/action.yml/badge.svg)](https://github.com/andrew-pineiro/TodoGenie/actions/workflows/action.yml)
+
 
 ## Purpose
 Generate GitHub issues based off of your commented TODO's, natively in Windows. Works for all programming style comments. 
