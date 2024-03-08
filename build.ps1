@@ -64,7 +64,7 @@ if($RunTests) {
         } | ConvertTo-Json
         
         $JsonData > $($SecretsPath + $directorySeparator + $secretsFile)
-        Write-Debug "Wrote json data to $($SecretsPath + $Separator + $secretsFile)"
+        Write-Debug "Wrote $JsonData to $($SecretsPath + $Separator + $secretsFile)"
     }
 
     try {
