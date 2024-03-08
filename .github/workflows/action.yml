@@ -17,6 +17,8 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - name: Build
+              env:
+                APIKEY: ${{ secrets.APIKEY }}
               shell: pwsh
               run: |
-                .\build.ps1 -Debug -RunTests
+                .\build.ps1 -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY

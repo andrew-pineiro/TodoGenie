@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [switch] $RunTests,
-    [switch] $NoNewSession
+    [switch] $NoNewSession,
+    [string] $ApiKey = ""
 )
 #Requires -RunAsAdministrator
 
@@ -47,6 +48,21 @@ if($RunTests) {
     if(-not(Get-Module -name $ModuleName -ListAvailable)) {
         Write-Host "- $ModuleName not found; skipped tests."
     }
+    
+    if($ApiKey -ne "") {
+        if(Test-Path $SecretsPath) {
+            Remove-Item $SecretsPath -Recurse -Force
+        }
+        New-Item $SecretsPath -ItemType:Directory
+        New-Item $($SecretsPath + $directorySeparator + $secretsFile)
+        $EncryptedKey = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($ApiKey))
+        $JsonData = @{
+            "GithubApiKey" = $EncryptedKey
+        } | ConvertTo-Json
+    
+        $JsonData > $($SecretsPath + $directorySeparator + $secretsFile)
+    }
+
     try {
         Write-Debug "running tests"
         $Timer.Reset()
