@@ -2,6 +2,7 @@ name: Build and Test TodoGenie
 on: push
 
 jobs:
+    #TODO(#113): Get Linux Build Testing Working
     # todogenie-build-linux:
     #     name: Build TodoGenie on Linux
     #     runs-on: ubuntu-latest
@@ -12,7 +13,7 @@ jobs:
     #           run: |
     #             ./build.ps1 -Debug
     todogenie-build-windows:
-        name: Build TodoGenie on Windows
+        name: Build & Test TodoGenie on Windows
         runs-on: windows-latest
         steps:
             - uses: actions/checkout@v4
