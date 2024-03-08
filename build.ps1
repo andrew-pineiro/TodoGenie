@@ -17,6 +17,10 @@ $ModulePath = $env:ProgramFiles + $Separator + "WindowsPowerShell" + $Separator 
 $ModuleName = $PSScriptRoot.Split($Separator)[-1]
 $ModulePathFull = $ModulePath + $Separator + $ModuleName + $Separator
 $PSEnvironment = (Get-Process -Id $PID).ProcessName
+$SecretsPath = $Env:USERPROFILE + $directorySeparator + ".todogenie"
+$directorySeparator = [System.IO.Path]::DirectorySeparatorChar
+$secretsFile = "secrets.json"
+
 Write-Debug "Attempting to use $ModulePath as module directory"
 
 if($ModulePath -notin $env:PSModulePath.Split(';')) {
@@ -48,7 +52,7 @@ if($RunTests) {
     if(-not(Get-Module -name $ModuleName -ListAvailable)) {
         Write-Host "- $ModuleName not found; skipped tests."
     }
-    
+
     if($ApiKey -ne "") {
         if(Test-Path $SecretsPath) {
             Remove-Item $SecretsPath -Recurse -Force
