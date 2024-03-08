@@ -114,33 +114,38 @@ function Invoke-Genie {
             $IssueList | Where-Object {$null -ne $_.ID} | ForEach-Object {    
                 if($_.ID -in $AllIssues.number) {
                     Write-Host "? Found issue #$($_.ID) in closed state. Attempt to cleanup files? (Y/N): " -NoNewline
-                    $userInput = Read-Host
-                    if($userInput -eq "Y") {
-                        $_.State = ($AllIssues | Where-Object {$_.number -eq $_.ID}).state
-                        $result = Remove-FileTodo $_
-                        if(-not($result)) {
-                            Write-Error "Couldn't remove TODO from $($_.File)"
-                            continue
+                    if(-not($TestMode)) {
+                        $userInput = Read-Host
+                        if($userInput -eq "Y") {
+                            $_.State = ($AllIssues | Where-Object {$_.number -eq $_.ID}).state
+                            $result = Remove-FileTodo $_
+                            if(-not($result)) {
+                                Write-Error "Couldn't remove TODO from $($_.File)"
+                                continue
+                            }
+                            [void]$CommitList.Add($_)
                         }
-                        [void]$CommitList.Add($_)
                     }
+
                 }
             }
         } elseif($Command -eq 'Create') {
             $IssueList | Where-Object {$null -eq $_.ID} | ForEach-Object {
                 Write-Host "? Attempt to create new git issue for [$($_.Title)]? (Y/N): " -NoNewline
-                $userInput = Read-Host
-                if($userInput -eq "Y") {
-                    $NewIssueID = New-GitIssue $GitDirectory $_.Title $_.Body
-                    if([int]$NewIssueID) {
-                        $_.'ID' = $NewIssueID
-                        $_.State = "open"
-                        $result = Update-FileTodo $_
-                        if(-not($result)) {
-                            Write-Error "Couldn't update TODO in $($_.File)"
-                            continue
+                if(-not($TestMode)) {
+                    $userInput = Read-Host
+                    if($userInput -eq "Y") {
+                        $NewIssueID = New-GitIssue $GitDirectory $_.Title $_.Body
+                        if([int]$NewIssueID) {
+                            $_.'ID' = $NewIssueID
+                            $_.State = "open"
+                            $result = Update-FileTodo $_
+                            if(-not($result)) {
+                                Write-Error "Couldn't update TODO in $($_.File)"
+                                continue
+                            }
+                            [void]$CommitList.Add($_)
                         }
-                        [void]$CommitList.Add($_)
                     }
                 }
             }
