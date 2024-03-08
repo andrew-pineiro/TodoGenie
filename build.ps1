@@ -62,8 +62,9 @@ if($RunTests) {
         $JsonData = @{
             "GithubApiKey" = $EncryptedKey
         } | ConvertTo-Json
-    
+        
         $JsonData > $($SecretsPath + $directorySeparator + $secretsFile)
+        Write-Debug "Wrote json data to $($SecretsPath + $Separator + $secretsFile)"
     }
 
     try {
