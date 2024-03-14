@@ -5,7 +5,7 @@ jobs:
     #TODO(#112): Get more then just the list subcommand working with actions
     #TODO(#113): Get Linux Build Testing Working
     todogenie-build-linux:
-        name: Build TodoGenie on Linux
+        name: Build & Test TodoGenie on Linux
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -14,7 +14,7 @@ jobs:
                 APIKEY: ${{ secrets.APIKEY }}
               shell: pwsh
               run: |
-                ./build.ps1 -SubCommands List -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY
+                sudo ./build.ps1 -SubCommands List -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY
     todogenie-build-windows:
         name: Build & Test TodoGenie on Windows
         runs-on: windows-latest
