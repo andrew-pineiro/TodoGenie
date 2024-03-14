@@ -4,7 +4,11 @@ $moduleManifest = $PSScriptRoot + $directorySeparator + $moduleName + '.psd1'
 $publicFunctionsPath = $PSScriptRoot + $directorySeparator + 'Public' + $directorySeparator
 $privateFunctionsPath = $PSScriptRoot + $directorySeparator + 'Private' + $directorySeparator
 $currentManifest = Test-ModuleManifest $moduleManifest
-$secretsPath = $Env:USERPROFILE + $directorySeparator + ".todogenie"
+if ($env:OS -eq 'Windows_NT') {
+    $SecretsPath = $Env:USERPROFILE + $Separator + ".todogenie"
+} else {
+    $SecretsPath = $Env:HOME + $Separator + ".todogenie"
+}
 $secretsFile = "secrets.json"
 $publicFunctions = Get-ChildItem -Path $publicFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
 $privateFunctions = Get-ChildItem -Path $privateFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
