@@ -23,14 +23,12 @@ $secretsFile = "secrets.json"
 
 if($ModulePath.Length -le 0) {
     $ModulePath = $env:ProgramFiles + $Separator + "WindowsPowerShell" + $Separator + "Modules"
+    if($ModulePath -notin $env:PSModulePath.Split(';')) {
+        $ModulePath = $env:PSModulePath[0]
+        Write-Debug "Original ModulePath not found in PSModulePath, reassigning to $ModulePath"
+    }
 }
-
 Write-Debug "Attempting to use $ModulePath as module directory"
-
-if($ModulePath -notin $env:PSModulePath.Split(';')) {
-    $ModulePath = $env:PSModulePath[0]
-    Write-Debug "Original ModulePath not found in PSModulePath, reassigning to $ModulePath"
-}
 
 $ModulePathFull = $ModulePath + $Separator + $ModuleName + $Separator
 try {

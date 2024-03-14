@@ -87,8 +87,8 @@ function Invoke-Genie {
                 
             }
             if($IssueStruct.Title.Length -lt 1) {
-                Write-Error "invalid issue name: $IssueTitle"
-                break 1
+                Write-Host "- $($IssueStruct.File):$($IssueStruct.Line): [invalid issue name]"
+                continue
             }
             [void]$IssueList.Add($IssueStruct)
         }
