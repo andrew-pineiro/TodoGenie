@@ -3,7 +3,6 @@ on: push
 
 jobs:
     #TODO(#112): Get more then just the list subcommand working with actions
-    #TODO(#113): Get Linux Build Testing Working
     todogenie-build-linux:
         name: Build & Test TodoGenie on Linux
         runs-on: ubuntu-latest
