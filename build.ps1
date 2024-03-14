@@ -50,7 +50,7 @@ try {
     $FirstTimerTotal = $($Timer.Elapsed.TotalSeconds)
     Write-Host "+ Build completed in $FirstTimerTotal seconds"
 } catch {
-    Write-Error "- $_"
+    Write-Error $_
     $Timer.Stop()
     break 1
 }
@@ -95,7 +95,7 @@ if($RunTests) {
         $Timer.Stop()
         $SecondTimerTotal = $($Timer.Elapsed.TotalSeconds)
     } catch {
-        Write-Error "- $_"
+        Write-Error $_
         $Timer.Stop()
         break 1
     }
