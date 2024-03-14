@@ -24,4 +24,4 @@ jobs:
                 APIKEY: ${{ secrets.APIKEY }}
               shell: pwsh
               run: |
-                .\build.ps1 -SubCommands List -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY
+                Invoke-Expression ".\build.ps1 -SubCommands List -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY"
