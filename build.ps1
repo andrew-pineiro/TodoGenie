@@ -18,7 +18,11 @@ $Timer.Start()
 $Separator = [System.IO.Path]::DirectorySeparatorChar
 $ModuleName = $PSScriptRoot.Split($Separator)[-1]
 $PSEnvironment = (Get-Process -Id $PID).ProcessName
-$SecretsPath = $Env:USERPROFILE + $Separator + ".todogenie"
+if ($env:OS -eq 'Windows_NT') {
+    $SecretsPath = $Env:USERPROFILE + $Separator + ".todogenie"
+} else {
+    $SecretsPath = $Env:HOME + $Separator + ".todogenie"
+}
 $secretsFile = "secrets.json"
 
 if($ModulePath.Length -le 0) {
