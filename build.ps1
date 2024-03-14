@@ -4,6 +4,7 @@ param(
     [string[]] $SubCommands = ('List', 'Prune', 'Create'),
     [switch] $RunTests,
     [switch] $NoNewSession,
+    [string] $ModulePath,
     [string] $ApiKey = ""
 )
 #Requires -RunAsAdministrator
@@ -15,12 +16,14 @@ $Timer = New-Object -TypeName 'System.Diagnostics.Stopwatch'
 $Timer.Start()
 
 $Separator = [System.IO.Path]::DirectorySeparatorChar
-$ModulePath = $env:ProgramFiles + $Separator + "WindowsPowerShell" + $Separator + "Modules"
 $ModuleName = $PSScriptRoot.Split($Separator)[-1]
-$ModulePathFull = $ModulePath + $Separator + $ModuleName + $Separator
 $PSEnvironment = (Get-Process -Id $PID).ProcessName
 $SecretsPath = $Env:USERPROFILE + $Separator + ".todogenie"
 $secretsFile = "secrets.json"
+
+if($ModulePath.Length -le 0) {
+    $ModulePath = $env:ProgramFiles + $Separator + "WindowsPowerShell" + $Separator + "Modules"
+}
 
 Write-Debug "Attempting to use $ModulePath as module directory"
 
@@ -29,6 +32,7 @@ if($ModulePath -notin $env:PSModulePath.Split(';')) {
     Write-Debug "Original ModulePath not found in PSModulePath, reassigning to $ModulePath"
 }
 
+$ModulePathFull = $ModulePath + $Separator + $ModuleName + $Separator
 try {
     if(Test-Path $ModulePathFull) {
         Remove-Item $ModulePathFull -Recurse -Force -ErrorAction:Stop
