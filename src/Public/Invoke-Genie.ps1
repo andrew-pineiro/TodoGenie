@@ -1,7 +1,8 @@
 function Invoke-Genie {
     [CmdletBinding()]
     param (
-        [ValidateSet('List','Prune','Create')]
+        #TODO: Cleanup subcommands
+        [ValidateSet('List','Prune','Create','Config')]
         [Parameter(Position=0, 
             HelpMessage = "Enter one of the subcommands to begin (List, Prune, Create)")]
         [Alias('c','cmd','cmds')]
@@ -31,6 +32,10 @@ function Invoke-Genie {
             HelpMessage = 'Shows the syntax/help message')]
         [Alias('h')]
         [switch] $Help
+        ,
+        [Parameter(
+            HelpMessage = 'Used to update ApiKey')]
+        [string] $NewApikey = ""
     )
     if($TestMode -and $SubCommands.Count -eq 0) {
         $SubCommands = 'List', 'Prune', 'Create'
@@ -40,7 +45,13 @@ function Invoke-Genie {
         Show-HelpMessage
         break
     }
-
+    if($SubCommands.Count -eq 1 -and $SubCommands[0] -eq "Config") {
+        if($NewApikey -ne "") {
+            Update-ApiKey $NewApikey
+            Write-Host "+ updated apiKey successfully"
+            break
+        }
+    }
     if(-not(Test-Path ($GitDirectory + $directorySeparator + ".git"))) {
         Write-Error "no valid .git directory found in $GitDirectory"
         break 1

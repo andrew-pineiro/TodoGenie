@@ -13,7 +13,7 @@ jobs:
                 APIKEY: ${{ secrets.APIKEY }}
               shell: pwsh
               run: |
-                Invoke-Expression "./build.ps1 -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY -ModulePath /home/runner/.local/share/powershell/Modules"
+                Invoke-Expression "./build.ps1 -Subcommands List -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY -ModulePath /home/runner/.local/share/powershell/Modules"
     todogenie-build-windows:
         name: Build & Test TodoGenie on Windows
         runs-on: windows-latest
@@ -24,4 +24,4 @@ jobs:
                 APIKEY: ${{ secrets.APIKEY }}
               shell: pwsh
               run: |
-                Invoke-Expression ".\build.ps1 -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY"
+                Invoke-Expression ".\build.ps1 -SubCommands List -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY"
