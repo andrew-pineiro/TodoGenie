@@ -6,9 +6,10 @@ function Get-AllGitIssues {
         $State = 'open'
     )
     $ApiKey = Get-ApiKey
+    Write-Debug "Checking for .git config in $RootDirectory"
     $GitData = Get-Content ($RootDirectory + $directorySeparator + ".git" + $directorySeparator + "config") | 
                     Select-String "url = https://github.com/(.+)/(.+).git"
-
+    Write-Debug $GitData
     if(-not($GitData.Matches)) {
         Write-Error "unable to gather items from .git config file"
         break 1
