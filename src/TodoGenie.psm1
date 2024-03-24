@@ -10,6 +10,7 @@ if ($env:OS -eq 'Windows_NT') {
     $SecretsPath = $Env:HOME + $directorySeparator + ".todogenie"
 }
 $secretsFile = "secrets.json"
+$secretsFileFullPath = ($secretsPath + $directorySeparator + $secretsFile)
 $publicFunctions = Get-ChildItem -Path $publicFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
 $privateFunctions = Get-ChildItem -Path $privateFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
 $publicFunctions | ForEach-Object { . $_.FullName }
@@ -55,7 +56,7 @@ if ($functionsAdded -or $functionsRemoved -or $aliasesAdded -or $aliasesRemoved)
 if(-not(Test-Path $SecretsPath)) {
     try {
             New-Item $SecretsPath -ItemType:Directory -ErrorAction:SilentlyContinue
-            New-Item ($SecretsPath + $directorySeparator + $secretsFile) -ErrorAction:Stop
+            New-Item $secretsFileFullPath -ErrorAction:Stop
         
             Write-Host "Enter Github ApiKey: " -NoNewline
             $Apikey = Read-Host -AsSecureString
@@ -72,7 +73,7 @@ if(-not(Test-Path $SecretsPath)) {
                 "GithubApiKey" = $EncryptedKey
             } | ConvertTo-Json
         
-            $JsonData > $($SecretsPath + $directorySeparator + $secretsFile)
+            $JsonData > $secretsFileFullPath
     }
     catch {
         Write-Error $_
