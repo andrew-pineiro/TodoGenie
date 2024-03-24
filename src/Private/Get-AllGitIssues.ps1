@@ -12,7 +12,7 @@ function Get-AllGitIssues {
     }
     $GitData = Get-Content ($RootDirectory + $directorySeparator + ".git" + $directorySeparator + "config") | 
                     Select-String "url = https://github.com/(.+)/(.+).git"
-    Write-Debug $GitData
+    Write-Debug "Data: $GitData"
     if(-not($GitData.Matches)) {
         Write-Error "unable to gather items from .git config file"
         break 1
