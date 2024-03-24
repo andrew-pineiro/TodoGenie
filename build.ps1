@@ -23,7 +23,8 @@ if ($env:OS -eq 'Windows_NT') {
 } else {
     $SecretsPath = $Env:HOME + $Separator + ".todogenie"
 }
-$secretsFile = "secrets.json"
+$SecretsFile = "secrets.json"
+$SecretsFullPath = $($SecretsPath + $Separator + $SecretsFile)
 
 if($ModulePath.Length -le 0) {
     $ModulePath = $env:ProgramFiles + $Separator + "WindowsPowerShell" + $Separator + "Modules"
@@ -65,14 +66,14 @@ if($RunTests) {
             Remove-Item $SecretsPath -Recurse -Force
         }
         New-Item $SecretsPath -ItemType:Directory > $null
-        New-Item $($SecretsPath + $Separator + $secretsFile) > $null
+        New-Item $SecretsFullPath > $null
         $EncryptedKey = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($ApiKey))
         $JsonData = @{
             "GithubApiKey" = $EncryptedKey
         } | ConvertTo-Json
         
-        $JsonData > $($SecretsPath + $directorySeparator + $secretsFile)
-        Write-Debug "Wrote ApiKey to $($SecretsPath + $Separator + $secretsFile)"
+        Set-Content $SecretsFullPath $JsonData
+        Write-Debug "Wrote ApiKey to $SecretsFullPath [$EncryptedKey]"
     }
 
     try {
