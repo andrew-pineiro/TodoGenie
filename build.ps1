@@ -73,7 +73,7 @@ if($RunTests) {
         } | ConvertTo-Json
         
         Set-Content $SecretsFullPath $JsonData
-        Write-Debug "Wrote ApiKey to $SecretsFullPath [$EncryptedKey]"
+        Write-Debug "Wrote ApiKey to $SecretsFullPath"
     }
 
     try {
