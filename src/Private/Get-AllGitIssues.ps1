@@ -7,6 +7,9 @@ function Get-AllGitIssues {
     )
     $ApiKey = Get-ApiKey
     Write-Debug "Checking for .git config in $RootDirectory"
+    if(-not(Test-Path $RootDirectory + $directorySeparator + ".git")) {
+        Write-Error "Unable to find ``.git`` directory in $RootDirectory"
+    }
     $GitData = Get-Content ($RootDirectory + $directorySeparator + ".git" + $directorySeparator + "config") | 
                     Select-String "url = https://github.com/(.+)/(.+).git"
     Write-Debug $GitData
