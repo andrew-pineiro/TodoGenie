@@ -1,16 +1,16 @@
-$directorySeparator = [System.IO.Path]::DirectorySeparatorChar
-$moduleName = $PSScriptRoot.Split($directorySeparator)[-1]
-$moduleManifest = $PSScriptRoot + $directorySeparator + $moduleName + '.psd1'
-$publicFunctionsPath = $PSScriptRoot + $directorySeparator + 'Public' + $directorySeparator
-$privateFunctionsPath = $PSScriptRoot + $directorySeparator + 'Private' + $directorySeparator
+$DirectorySeparator = [System.IO.Path]::DirectorySeparatorChar
+$moduleName = $PSScriptRoot.Split($DirectorySeparator)[-1]
+$moduleManifest = $PSScriptRoot + $DirectorySeparator + $moduleName + '.psd1'
+$publicFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Public' + $DirectorySeparator
+$privateFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Private' + $DirectorySeparator
 $currentManifest = Test-ModuleManifest $moduleManifest
 if ($env:OS -eq 'Windows_NT') {
-    $SecretsPath = $Env:USERPROFILE + $directorySeparator + ".todogenie"
+    $SecretsPath = $Env:USERPROFILE + $DirectorySeparator + ".todogenie"
 } else {
-    $SecretsPath = $Env:HOME + $directorySeparator + ".todogenie"
+    $SecretsPath = $Env:HOME + $DirectorySeparator + ".todogenie"
 }
-$secretsFile = "secrets.json"
-$secretsFileFullPath = ($secretsPath + $directorySeparator + $secretsFile)
+$SecretsFile = "secrets.json"
+$SecretsFileFullPath = ($SecretsPath + $DirectorySeparator + $SecretsFile)
 $publicFunctions = Get-ChildItem -Path $publicFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
 $privateFunctions = Get-ChildItem -Path $privateFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
 $publicFunctions | ForEach-Object { . $_.FullName }
@@ -59,21 +59,21 @@ if(-not(Test-Path $SecretsPath)) {
             New-Item $secretsFileFullPath -ErrorAction:Stop
         
             Write-Host "Enter Github ApiKey: " -NoNewline
-            $Apikey = Read-Host -AsSecureString
-            $EncryptedKey = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(
+            $apikey = Read-Host -AsSecureString
+            $encryptedKey = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(
                 [System.RunTime.InteropServices.Marshal]::PtrToStringAuto(
-                    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Apikey))))
+                    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($apikey))))
 
-            if($ApiKey.Length -le 0) {
+            if($apiKey.Length -le 0) {
                 Write-Error "invalid apiKey entered"
                 break 1
             }
                 
-            $JsonData = @{
-                "GithubApiKey" = $EncryptedKey
+            $jsonData = @{
+                "GithubApiKey" = $encryptedKey
             } | ConvertTo-Json
         
-            $JsonData > $secretsFileFullPath
+            $jsonData > $SecretsFileFullPath
     }
     catch {
         Write-Error $_

@@ -6,99 +6,99 @@ function Invoke-Genie {
         [Parameter(Position=0, 
             HelpMessage = "Enter one of the subcommands to begin (List, Prune, Create)")]
         [Alias('c','cmd','cmds')]
-        [string[]] $SubCommands
+        [string[]] $subCommands
         ,
         [Parameter(Position=1,
             HelpMessage = "Directory with the .git folder")]
         [Alias('d','dir')]
-        [string] $GitDirectory = $PWD
+        [string] $gitDirectory = $PWD
         ,
         [Parameter(ParameterSetName = 'TestMode',
             HelpMessage = 'Enables test mode, which runs through all subcommands in the specified -TestDirectory')]
         [Alias('t','test')]
-        [switch] $TestMode
+        [switch] $testMode
         ,
         [Parameter(ParameterSetName = 'TestMode',
             HelpMessage = 'Test directory to run -TestMode in. Defaults to test/')]
         [Alias('td', 'testdir')]
-        [string] $TestDirectory = "test/"
+        [string] $testDirectory = "test/"
         ,
         [Parameter(
             HelpMessage = 'Avoids commiting the changes to the repo automatically')]
         [Alias('n')]
-        [switch] $NoAutoCommit
+        [switch] $noAutoCommit
         ,
         [Parameter(
             HelpMessage = 'Shows the syntax/help message')]
         [Alias('h')]
-        [switch] $Help
+        [switch] $help
         ,
         [Parameter(
             HelpMessage = 'Used to update ApiKey')]
-        [string] $NewApikey = ""
+        [string] $newApikey = ""
     )
-    if($TestMode -and $SubCommands.Count -eq 0) {
-        $SubCommands = 'List', 'Prune', 'Create'
+    if($testMode -and $subCommands.Count -eq 0) {
+        $subCommands = 'List', 'Prune', 'Create'
     }
 
-    if($Help -or $SubCommands.Count -eq 0) {
+    if($help -or $subCommands.Count -eq 0) {
         Show-HelpMessage
         break
     }
-    if($SubCommands.Count -eq 1 -and $SubCommands[0] -eq "Config") {
-        if($NewApikey -ne "") {
-            Update-ApiKey $NewApikey
+    if($subCommands.Count -eq 1 -and $subCommands[0] -eq "Config") {
+        if($newApikey -ne "") {
+            Update-ApiKey $newApikey
             Write-Host "+ updated apiKey successfully"
             break
         }
     }
-    if(-not(Test-Path ($GitDirectory + $directorySeparator + ".git"))) {
-        Write-Error "no valid .git directory found in $GitDirectory"
+    if(-not(Test-Path ($gitDirectory + $DirectorySeparator + ".git"))) {
+        Write-Error "no valid .git directory found in $gitDirectory"
         break 1
     }
 
     $MatchPattern = "^(.*)(TODO)(.*):\s*(.*)$"
     $IssueList = New-Object System.Collections.ArrayList
     $CommitList = New-Object System.Collections.ArrayList
-    $directory = switch ($TestMode) {
-        $true { $TestDirectory }
+    $Directory = switch ($testMode) {
+        $true { $testDirectory }
         default {"*"}
     }
-    $Items = Invoke-Command -ScriptBlock {git ls-files $directory}
+    $Items = Invoke-Command -ScriptBlock {git ls-files $Directory}
 
-    foreach($Item in $Items) {
+    foreach($item in $Items) {
         if(-not(Test-Path $Item)) {
             Write-Debug "not found: ``$Item``"
             continue
         }
         
-        foreach($Match in (Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_})) {
-            $LineNumber = $Match.LineNumber
-            $Match = $Match.Matches.Groups
-            Write-Debug "$($Item):$($LineNumber): ``$($Match[0].Value)``"
-            $IssueStruct = @{
-                Line     = $LineNumber
-                File     = $Item
-                FullLine = $Match[0].Value
-                Prefix   = $Match[1].Value
-                Keyword  = $Match[2].Value 
+        foreach($match in (Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_})) {
+            $lineNumber = $Match.LineNumber
+            $match = $match.Matches.Groups
+            Write-Debug "$($item):$($lineNumber): ``$($match[0].Value)``"
+            $issueStruct = @{
+                Line     = $lineNumber
+                File     = $item
+                FullLine = $match[0].Value
+                Prefix   = $match[1].Value
+                Keyword  = $match[2].Value 
                 ID       = $null
-                Title    = $Match[4].Value
+                Title    = $match[4].Value
                 Body     = ''
                 State    = ''
             }
             
-            $IDMatch = $Match[3].Value
-            if($IDMatch.Length -gt 0) {
-                $IDMatch = $IDMatch | Select-String -Pattern "\(#(\d+)\)"
-                if($IDMatch) {
-                    [int]$IssueStruct.ID = $IDMatch.Matches.Groups[1].Value
-                    Write-debug "$($IssueStruct.File):$($IssueStruct.Line): ID FOUND: #$($IssueStruct.ID)"
+            $idMatch = $match[3].Value
+            if($idMatch.Length -gt 0) {
+                $idMatch = $idMatch | Select-String -Pattern "\(#(\d+)\)"
+                if($idMatch) {
+                    [int]$issueStruct.ID = $idMatch.Matches.Groups[1].Value
+                    Write-debug "$($issueStruct.File):$($issueStruct.Line): ID FOUND: #$($issueStruct.ID)"
                 }
                 
             }
-            if($IssueStruct.Title.Length -lt 1) {
-                Write-Host "- $($IssueStruct.File):$($IssueStruct.Line): [invalid issue name]"
+            if($issueStruct.Title.Length -lt 1) {
+                Write-Host "- $($issueStruct.File):$($issueStruct.Line): [invalid issue name]"
                 continue
             }
             [void]$IssueList.Add($IssueStruct)
@@ -108,25 +108,25 @@ function Invoke-Genie {
         Write-Host "- No TODOs found in $GitDirectory"
         break
     }
-    foreach($Command in $SubCommands) {
-        Write-Debug "------ $Command ------"
-        if($Command -eq 'List') {
+    foreach($command in $subCommands) {
+        Write-Debug "------ $command ------"
+        if($command -eq 'List') {
             $IssueList | ForEach-Object {
                 $Line     = $_.Line
                 $File     = $_.File
                 $FullLine = $_.FullLine
                 Write-Host "+ $($File):$($Line): $($FullLine.Trim())"
             }
-        } elseif($Command -eq 'Prune') {
+        } elseif($command -eq 'Prune') {
             Write-Debug "Gathering all closed GitHub issues"
-            $AllIssues = Get-AllGitIssues $GitDirectory -State closed 
-            $IssueList | Where-Object {$null -ne $_.ID} | ForEach-Object {    
-                if($_.ID -in $AllIssues.number) {
+            $allIssues = Get-AllGitIssues $gitDirectory -State closed 
+            $issueList | Where-Object {$null -ne $_.ID} | ForEach-Object {    
+                if($_.ID -in $allIssues.number) {
                     Write-Host "? Found issue #$($_.ID) in closed state. Attempt to cleanup files? (Y/N): " -NoNewline:$(-not($TestMode))
-                    if(-not($TestMode)) {
+                    if(-not($testMode)) {
                         $userInput = Read-Host
                         if($userInput -eq "Y") {
-                            $_.State = ($AllIssues | Where-Object {$_.number -eq $_.ID}).state
+                            $_.State = ($allIssues | Where-Object {$_.number -eq $_.ID}).state
                             $result = Remove-FileTodo $_
                             if(-not($result)) {
                                 Write-Error "Couldn't remove TODO from $($_.File)"
@@ -137,15 +137,15 @@ function Invoke-Genie {
                     }
                 } 
             }
-        } elseif($Command -eq 'Create') {
-            $IssueList | Where-Object {$null -eq $_.ID} | ForEach-Object {
-                Write-Host "? Attempt to create new git issue for [$($_.Title)]? (Y/N): " -NoNewline:$(-not($TestMode))
-                if(-not($TestMode)) {
+        } elseif($command -eq 'Create') {
+            $issueList | Where-Object {$null -eq $_.ID} | ForEach-Object {
+                Write-Host "? Attempt to create new git issue for [$($_.Title)]? (Y/N): " -NoNewline:$(-not($testMode))
+                if(-not($testMode)) {
                     $userInput = Read-Host
                     if($userInput -eq "Y") {
-                        $NewIssueID = New-GitIssue $GitDirectory $_.Title $_.Body
-                        if([int]$NewIssueID) {
-                            $_.'ID' = $NewIssueID
+                        $newIssueID = New-GitIssue $gitDirectory $_.Title $_.Body
+                        if([int]$newIssueID) {
+                            $_.'ID' = $newIssueID
                             $_.State = "open"
                             $result = Update-FileTodo $_
                             if(-not($result)) {
@@ -157,7 +157,7 @@ function Invoke-Genie {
                     }
                 } 
             }
-            if($CommitList.Count -gt 0 -and -not($NoAutoCommit)) {
+            if($CommitList.Count -gt 0 -and -not($noAutoCommit)) {
                 Write-Host "+ Pushing $($CommitList.Count) changes to GitHub repository."
                 Invoke-CommitTodo $CommitList
             }

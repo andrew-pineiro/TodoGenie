@@ -1,14 +1,14 @@
 function Update-FileTodo {
     [CmdletBinding()]
     param(
-        $IssueStruct
+        $issueStruct
     )
-    $ResolvedPath = (Resolve-Path $IssueStruct.File).Path
-    if($ResolvedPath) {
+    $resolvedPath = (Resolve-Path $issueStruct.File).Path
+    if($resolvedPath) {
         try {
-            $NewLine = "$($IssueStruct.Prefix)$($IssueStruct.Keyword)(#$($IssueStruct.ID)): $($IssueStruct.Title)"
-            (Get-Content $ResolvedPath) -replace $IssueStruct.FullLine, $NewLine | 
-                Set-Content $ResolvedPath -Force -ErrorAction:Stop
+            $newLine = "$($issueStruct.Prefix)$($issueStruct.Keyword)(#$($issueStruct.ID)): $($issueStruct.Title)"
+            (Get-Content $resolvedPath) -replace $issueStruct.FullLine, $newLine | 
+                Set-Content $resolvedPath -Force -ErrorAction:Stop
             return $true
         } catch {
             return $false

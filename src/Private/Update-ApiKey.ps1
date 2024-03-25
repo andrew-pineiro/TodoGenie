@@ -1,14 +1,14 @@
 function Update-ApiKey {
     [CmdletBinding()]
     param (
-        [string] $NewKey
+        [string] $newKey
     )
-    $EncryptedKey = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($NewKey))
-    $JsonData = @{
-        "GithubApiKey" = $EncryptedKey
+    $encryptedKey = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($newKey))
+    $jsonData = @{
+        "GithubApiKey" = $encryptedKey
     } | ConvertTo-Json
-    if(-not(Test-Path $secretsFileFullPath)) {
-        New-Item $secretsFileFullPath > $null
+    if(-not(Test-Path $SecretsFileFullPath)) {
+        New-Item $SecretsFileFullPath > $null
     }
-    Set-Content $secretsFileFullPath $JsonData
+    Set-Content $SecretsFileFullPath $jsonData
 }

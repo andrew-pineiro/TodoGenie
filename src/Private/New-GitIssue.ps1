@@ -1,39 +1,39 @@
 function New-GitIssue {
     [CmdletBinding()]
     param(
-        $RootDirectory,
-        $Issue,
-        $Comments
+        $rootDirectory,
+        $issue,
+        $comments
     )
 
-    $ApiKey = Get-ApiKey
-    $GitModuleURL = "https://github.com/andrew-pineiro/TodoGenie/"
-    $GitData = (Get-Content ($RootDirectory + $directorySeparator + ".git" + $directorySeparator + "config") | 
+    $apiKey = Get-ApiKey
+    $gitModuleURL = "https://github.com/andrew-pineiro/TodoGenie/"
+    $gitData = (Get-Content ($rootDirectory + $DirectorySeparator + ".git" + $DirectorySeparator + "config") | 
                         Select-String "url = https://github.com/(.+)/(.+).git").Matches
-    $RepoName = $GitData.Groups[2].Value
-    $OwnerName = $GitData.Groups[1].Value
-    if($RepoName -eq "" -or $null -eq $RepoName -or $OwnerName -eq "" -or $null -eq $OwnerName) {
+    $repoName = $gitData.Groups[2].Value
+    $ownerName = $gitData.Groups[1].Value
+    if($repoName -eq "" -or $null -eq $repoName -or $ownerName -eq "" -or $null -eq $ownerName) {
         Write-Error "invalid repository name or owner name"
         break 1
     }
-    $BaseUri = "https://api.github.com/repos/$OwnerName/$RepoName/issues"
-    $Headers = @{
+    $baseUri = "https://api.github.com/repos/$ownerName/$repoName/issues"
+    $headers = @{
         "Accept" = "application/vnd.github+json"
         "Authorization" = "Bearer $ApiKey"
         "X-GitHub-Api-Version" = "2022-11-28"
     }
-    $Body = @{
-        "title" = "[Automated] $Issue"
-        "body" = "**Created On:** $(Get-Date)  <br />**Created By:** [TodoGenie]($GitModuleURL) <br /><br />**Additional Comments:** <br />$Comments"
+    $body = @{
+        "title" = "[Automated] $issue"
+        "body" = "**Created On:** $(Get-Date)  <br />**Created By:** [TodoGenie]($gitModuleURL) <br /><br />**Additional Comments:** <br />$comments"
     } | ConvertTo-Json
     try {
-        $Response = Invoke-WebRequest -Uri $BaseUri -Method Post -Headers $Headers -Body $Body
-        Write-Debug "Ratelimit attempts remaining: $($Response.Headers["X-Ratelimit-Remaining"])"
+        $response = Invoke-WebRequest -Uri $baseUri -Method Post -Headers $headers -Body $body
+        Write-Debug "Ratelimit attempts remaining: $($response.Headers["X-Ratelimit-Remaining"])"
     } catch {
         Write-Error $_
         break 1
     }
-    $Response = $Response.Content | ConvertFrom-Json
-    return $Response.Number
+    $response = $response.Content | ConvertFrom-Json
+    return $response.Number
 
 }

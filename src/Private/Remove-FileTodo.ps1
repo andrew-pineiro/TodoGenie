@@ -1,13 +1,13 @@
 function Remove-FileTodo {
     [CmdletBinding()]
     param(
-        $IssueStruct
+        $issueStruct
     )
-    $ResolvedPath = (Resolve-Path $IssueStruct.File).Path
-    if($ResolvedPath) {
+    $resolvedPath = (Resolve-Path $IssueStruct.File).Path
+    if($resolvedPath) {
         try {
-            (Get-Content $ResolvedPath | Where-Object {$_ -ne $IssueStruct.FullLine}) |
-                Set-Content $ResolvedPath -Force -ErrorAction:Stop
+            (Get-Content $resolvedPath | Where-Object {$_ -ne $issueStruct.FullLine}) |
+                Set-Content $resolvedPath -Force -ErrorAction:Stop
             return $true
         } catch {
             return $false
