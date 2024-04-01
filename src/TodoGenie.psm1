@@ -1,9 +1,7 @@
+<#
+   Global Module Variables
+#>
 $DirectorySeparator = [System.IO.Path]::DirectorySeparatorChar
-$moduleName = $PSScriptRoot.Split($DirectorySeparator)[-1]
-$moduleManifest = $PSScriptRoot + $DirectorySeparator + $moduleName + '.psd1'
-$publicFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Public' + $DirectorySeparator
-$privateFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Private' + $DirectorySeparator
-$currentManifest = Test-ModuleManifest $moduleManifest
 if ($env:OS -eq 'Windows_NT') {
     $SecretsPath = $Env:USERPROFILE + $DirectorySeparator + ".todogenie"
 } else {
@@ -11,6 +9,15 @@ if ($env:OS -eq 'Windows_NT') {
 }
 $SecretsFile = "secrets.json"
 $SecretsFileFullPath = ($SecretsPath + $DirectorySeparator + $SecretsFile)
+
+<#
+    Local Module Variables
+#>
+$moduleName = $PSScriptRoot.Split($DirectorySeparator)[-1]
+$moduleManifest = $PSScriptRoot + $DirectorySeparator + $moduleName + '.psd1'
+$publicFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Public' + $DirectorySeparator
+$privateFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Private' + $DirectorySeparator
+$currentManifest = Test-ModuleManifest $moduleManifest
 $publicFunctions = Get-ChildItem -Path $publicFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
 $privateFunctions = Get-ChildItem -Path $privateFunctionsPath | Where-Object {$_.Extension -eq '.ps1'}
 $publicFunctions | ForEach-Object { . $_.FullName }
