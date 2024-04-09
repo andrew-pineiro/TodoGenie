@@ -132,7 +132,7 @@ function Invoke-Genie {
                                 Write-Error "Couldn't remove TODO from $($_.File)"
                                 continue
                             }
-                            [void]$CommitList.Add($_)
+                            Invoke-CommitTodo $_
                         }
                     }
                 } 
@@ -152,17 +152,13 @@ function Invoke-Genie {
                                 Write-Error "Couldn't update TODO in $($_.File)"
                                 continue
                             }
-                            [void]$CommitList.Add($_)
+                            Invoke-CommitTodo $_
                         }
                     }
                 } 
-            }
-            if($CommitList.Count -gt 0 -and -not($noAutoCommit)) {
-                Write-Host "+ Pushing $($CommitList.Count) changes to GitHub repository."
-                Invoke-CommitTodo $CommitList
-            }
-            
+            }        
         }
+        Invoke-PushTodo
     }
     
 }
