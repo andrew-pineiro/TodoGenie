@@ -59,7 +59,6 @@ function Invoke-Genie {
 
     $MatchPattern = "^(.*)(TODO)(.*):\s*(.*)$"
     $IssueList = New-Object System.Collections.ArrayList
-    $CommitList = New-Object System.Collections.ArrayList
     $Directory = switch ($testMode) {
         $true { $testDirectory }
         default {"*"}
