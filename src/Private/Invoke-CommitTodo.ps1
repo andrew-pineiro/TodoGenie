@@ -14,7 +14,8 @@ function Invoke-CommitTodo {
         $commitMsg = "$commitWord $($issue.Keyword)(#$($issue.ID)): $($issue.Title)"
         Invoke-Command -ScriptBlock { git add $issue.File} -ErrorAction:Stop
         Invoke-Command -ScriptBlock { git commit -m "$commitMsg"} -ErrorAction:Stop
-
+        Invoke-Command -ScriptBlock { git push } -ErrorAction:Stop
+        
     } catch {
         Write-Error $_
         break 1

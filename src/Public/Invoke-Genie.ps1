@@ -157,7 +157,6 @@ function Invoke-Genie {
                 } 
             }        
         }
-        Invoke-PushTodo
     }
     
 }
