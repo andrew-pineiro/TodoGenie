@@ -125,7 +125,7 @@ function Invoke-Genie {
                     if(-not($testMode)) {
                         $userInput = Read-Host
                         if($userInput -eq "Y") {
-                            $_.State = ($allIssues | Where-Object {$_.number -eq $_.ID}).state
+                            $_.State = "closed"
                             $result = Remove-FileTodo $_
                             if(-not($result)) {
                                 Write-Error "Couldn't remove TODO from $($_.File)"
