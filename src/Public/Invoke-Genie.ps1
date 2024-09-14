@@ -36,6 +36,11 @@ function Invoke-Genie {
         [Parameter(
             HelpMessage = 'Used to update ApiKey')]
         [string] $newApikey = ""
+        ,
+        [Alias('X')]
+        [Parameter(
+            HelpMessage = 'Excluded Directory (name only)')]
+        [string] $excludedDir = ""
     )
     if($testMode -and $subCommands.Count -eq 0) {
         $subCommands = 'List', 'Prune', 'Create'
@@ -63,7 +68,7 @@ function Invoke-Genie {
         $true { $testDirectory }
         default {"*"}
     }
-    $Items = Invoke-Command -ScriptBlock {git ls-files $Directory}
+    $Items = Invoke-Command -ScriptBlock {git ls-files $Directory | Where-Object {$_ -notlike "$excludedDir/*"}}
 
     foreach($item in $Items) {
         if(-not(Test-Path $Item)) {
