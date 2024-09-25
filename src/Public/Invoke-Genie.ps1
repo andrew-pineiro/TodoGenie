@@ -39,8 +39,8 @@ function Invoke-Genie {
         ,
         [Alias('X')]
         [Parameter(
-            HelpMessage = 'Excluded Directory (name only)')]
-        [string] $excludedDir = ""
+            HelpMessage = 'Excluded Directories (name only), comma seperated [ex: folder1,folder2,folder3]')]
+        [string[]] $excludedDirs
     )
     if($testMode -and $subCommands.Count -eq 0) {
         $subCommands = 'List', 'Prune', 'Create'
@@ -68,9 +68,13 @@ function Invoke-Genie {
         $true { $testDirectory }
         default {"*"}
     }
-    $Items = Invoke-Command -ScriptBlock {git ls-files $Directory | Where-Object {$_ -notlike "$excludedDir/*"}}
+    $Items = Invoke-Command -ScriptBlock { git ls-files $Directory }
 
     foreach($item in $Items) {
+        if($excludedDirs | % {$item -like "$_/*"}) {
+            Write-Debug "$item excluded"
+            continue
+        }
         if(-not(Test-Path $Item)) {
             Write-Debug "not found: ``$Item``"
             continue
