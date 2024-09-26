@@ -147,12 +147,11 @@ function Invoke-Genie {
         Write-Debug "------ $command ------"
         if($command -eq 'List') {
             $IssueList | ForEach-Object {
-                $Line     = $_.Line
-                $File     = $_.File
-                $FullLine = $_.FullLine
-                Write-Host "+ $($File):$($Line): $($FullLine.Trim())"
+                Write-Host "+ $($_.File):$($_.Line): $($_.FullLine.Trim())"
                 if(-not([string]::IsNullOrEmpty($_.Body))) {
-                    ($_.Body.Split("`n") | % { Write-Host "`t+ $($_.Trim())" })
+                    ($_.Body.Split("`n") | % { 
+                        Write-Host "`t+ $($_.Trim())" 
+                    })
                 }
             }
         } elseif($command -eq 'Prune') {
