@@ -62,7 +62,11 @@ function Invoke-Genie {
         break 1
     }
 
-    $MatchPattern = "^(.*)(TODO)(.*):\s*(.*)$"
+    $MatchPattern = "^(.*)(TODO)(.*):\s*(.*)"
+    # Maximum lines to absorb for body
+    $MaxBodyLines = 3
+    # Maximum characters to absorb for prefix (comment syntax)
+    $MaxPrefixLength = 3
     $IssueList = New-Object System.Collections.ArrayList
     $Directory = switch ($testMode) {
         $true { $testDirectory }
@@ -71,7 +75,8 @@ function Invoke-Genie {
     $Items = Invoke-Command -ScriptBlock { git ls-files $Directory }
 
     foreach($item in $Items) {
-        if($excludedDirs | % {$item -like "$_/*"}) {
+        #TODO: Fix issue with multiple dirs excluding more than expected
+        if(($excludedDirs | % {$item -like "$_/*"})) {
             Write-Debug "$item excluded"
             continue
         }
@@ -80,22 +85,45 @@ function Invoke-Genie {
             continue
         }
         
-        foreach($match in (Get-Content $Item | Select-String -Pattern $MatchPattern | Where-Object {$null -ne $_})) {
-            $lineNumber = $Match.LineNumber
-            $match = $match.Matches.Groups
+        Get-Content $item | Select-String -Pattern $MatchPattern -Context 0,$MaxBodyLines | Where-Object {$null -ne $_} | ForEach-Object {
+            $lineNumber = $_.LineNumber
+            $match = $_.Matches.Groups
+            $bodyLineCount = $_.Context.PostContext.Count
+            
+            $rawBody = ''
+            $rawPrefix = $match[1].Value.Trim()
             Write-Debug "$($item):$($lineNumber): ``$($match[0].Value)``"
+
             $issueStruct = @{
                 Line     = $lineNumber
                 File     = $item
                 FullLine = $match[0].Value
-                Prefix   = $match[1].Value
+                Prefix   = $rawPrefix.Length -gt $MaxPrefixLength ? $rawPrefix[0..2] : $rawPrefix
                 Keyword  = $match[2].Value 
                 ID       = $null
                 Title    = $match[4].Value
                 Body     = ''
                 State    = ''
             }
-            
+
+            Write-Debug "$($item):$($lineNumber): PREFIX: ``$($issueStruct.Prefix)``"
+
+            if($issueStruct.Prefix.Length -gt 0) {
+                for($i = 0; $i -le $bodyLineCount; $i++) {
+                    $line = $_.Context.PostContext[$i]
+                    if(-not($line)) { continue }
+                    Write-Debug "$($item):$($lineNumber): LINE: $($line.TrimStart())"
+
+                    if($line.TrimStart().StartsWith($issueStruct.Prefix) -and $line.Length -gt 3) {
+                        Write-Debug "$($issueStruct.File):$($issueStruct.Line): Prefix Used: $($issueStruct.Prefix)"
+                        Write-Debug "$($issueStruct.File):$($issueStruct.Line): Adding to body: $($line.Replace($issueStruct.Prefix, ''))"
+                        
+                        $rawBody += "$($line.Replace($issueStruct.Prefix, ''))`n"
+                    }
+                }
+            }
+            $issueStruct.Body = $rawBody.Trim()
+
             $idMatch = $match[3].Value
             if($idMatch.Length -gt 0) {
                 $idMatch = $idMatch | Select-String -Pattern "\(#(\d+)\)"
@@ -106,7 +134,7 @@ function Invoke-Genie {
                 
             }
             if($issueStruct.Title.Length -lt 1) {
-                Write-Host "- $($issueStruct.File):$($issueStruct.Line): [invalid issue name]"
+                Write-Debug "- $($issueStruct.File):$($issueStruct.Line): [invalid issue name]"
                 continue
             }
             [void]$IssueList.Add($IssueStruct)
@@ -120,10 +148,12 @@ function Invoke-Genie {
         Write-Debug "------ $command ------"
         if($command -eq 'List') {
             $IssueList | ForEach-Object {
-                $Line     = $_.Line
-                $File     = $_.File
-                $FullLine = $_.FullLine
-                Write-Host "+ $($File):$($Line): $($FullLine.Trim())"
+                Write-Host "+ $($_.File):$($_.Line): $($_.FullLine.Trim())"
+                if(-not([string]::IsNullOrEmpty($_.Body))) {
+                    ($_.Body.Split("`n") | % { 
+                        Write-Host "`t+ $($_.Trim())" 
+                    })
+                }
             }
         } elseif($command -eq 'Prune') {
             Write-Debug "Gathering all closed GitHub issues"
