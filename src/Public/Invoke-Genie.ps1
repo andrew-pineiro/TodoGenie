@@ -75,7 +75,8 @@ function Invoke-Genie {
     $Items = Invoke-Command -ScriptBlock { git ls-files $Directory }
 
     foreach($item in $Items) {
-        if($excludedDirs | % {$item -like "$_/*"}) {
+        #TODO: Fix issue with multiple dirs excluding more than expected
+        if(($excludedDirs | % {$item -like "$_/*"})) {
             Write-Debug "$item excluded"
             continue
         }
@@ -110,10 +111,10 @@ function Invoke-Genie {
             if($issueStruct.Prefix.Length -gt 0) {
                 for($i = 0; $i -le $bodyLineCount; $i++) {
                     $line = $_.Context.PostContext[$i]
-
+                    if(-not($line)) { continue }
                     Write-Debug "$($item):$($lineNumber): LINE: $($line.TrimStart())"
 
-                    if($line -and $line.TrimStart().StartsWith($issueStruct.Prefix) -and $line.Length -gt 3) {
+                    if($line.TrimStart().StartsWith($issueStruct.Prefix) -and $line.Length -gt 3) {
                         Write-Debug "$($issueStruct.File):$($issueStruct.Line): Prefix Used: $($issueStruct.Prefix)"
                         Write-Debug "$($issueStruct.File):$($issueStruct.Line): Adding to body: $($line.Replace($issueStruct.Prefix, ''))"
                         
