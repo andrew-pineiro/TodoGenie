@@ -105,11 +105,17 @@ function Invoke-Genie {
                 Body     = ''
                 State    = ''
             }
-
+           
+            Write-Debug "$($item):$($lineNumber): PREFIX: ``$($issueStruct.Prefix)``"
+            
+            # BODY COLLECTION
             if($issueStruct.Prefix.Length -gt 0) {
                 for($i = 0; $i -le $bodyLineCount; $i++) {
                     $line = $_.Context.PostContext[$i]
-                    if(-not($line) -or $line.Contains($issueStruct.Keyword)) { continue }
+                    if(-not($line)) { continue }
+                    if($line -match "$($issueStruct.Prefix)\s*$($issueStruct.Keyword)") { continue }
+                    Write-Debug "$($item):$($lineNumber): LINE: $($line.TrimStart())"
+
                     if($line.TrimStart().StartsWith($issueStruct.Prefix) -and $line.Length -gt 3) {
                         Write-Debug "$($item):$($lineNumber): LINE: $($line.TrimStart())"
                         Write-Debug "$($issueStruct.File):$($issueStruct.Line): Prefix Used: $($issueStruct.Prefix)"
@@ -121,6 +127,7 @@ function Invoke-Genie {
             }
             $issueStruct.Body = $rawBody.Trim()
 
+            # ID COLLECTION
             $idMatch = $match[3].Value
             if($idMatch.Length -gt 0) {
                 $idMatch = $idMatch | Select-String -Pattern "\(#(\d+)\)"
@@ -130,6 +137,7 @@ function Invoke-Genie {
                 }
                 
             }
+
             if($issueStruct.Title.Length -lt 1) {
                 Write-Debug "- $($issueStruct.File):$($issueStruct.Line): [invalid issue name]"
                 continue
@@ -145,7 +153,7 @@ function Invoke-Genie {
         Write-Debug "------ $command ------"
         if($command -eq 'List') {
             $IssueList | ForEach-Object {
-                Write-Host "+ $($_.File):$($_.Line): $($_.FullLine.Trim())"
+                Write-Host "+ $($_.File):$($_.Line): $($_.FullLine.Trim().Replace($_.Prefix, ''))"
                 if(-not([string]::IsNullOrEmpty($_.Body))) {
                     ($_.Body.Split("`n") | % { 
                         Write-Host "`t+ $($_.Trim())" 
