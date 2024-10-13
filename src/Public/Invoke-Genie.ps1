@@ -92,7 +92,7 @@ function Invoke-Genie {
             
             $rawBody = ''
             $rawPrefix = $match[1].Value.Trim()
-            Write-Debug "$($item):$($lineNumber): ``$($match[0].Value)``"
+            Write-Debug "$($item):$($lineNumber): ``$($match[0].Value.TrimStart())``"
 
             $issueStruct = @{
                 Line     = $lineNumber
@@ -105,7 +105,7 @@ function Invoke-Genie {
                 Body     = ''
                 State    = ''
             }
-
+           
             Write-Debug "$($item):$($lineNumber): PREFIX: ``$($issueStruct.Prefix)``"
             
             # BODY COLLECTION
@@ -117,6 +117,7 @@ function Invoke-Genie {
                     Write-Debug "$($item):$($lineNumber): LINE: $($line.TrimStart())"
 
                     if($line.TrimStart().StartsWith($issueStruct.Prefix) -and $line.Length -gt 3) {
+                        Write-Debug "$($item):$($lineNumber): LINE: $($line.TrimStart())"
                         Write-Debug "$($issueStruct.File):$($issueStruct.Line): Prefix Used: $($issueStruct.Prefix)"
                         Write-Debug "$($issueStruct.File):$($issueStruct.Line): Adding to body: $($line.Replace($issueStruct.Prefix, ''))"
                         
