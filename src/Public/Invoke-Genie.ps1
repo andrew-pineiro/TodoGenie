@@ -98,7 +98,7 @@ function Invoke-Genie {
                 Line     = $lineNumber
                 File     = $item
                 FullLine = $match[0].Value
-                Prefix   = $rawPrefix.Length -gt $MaxPrefixLength ? $rawPrefix[0..2] : $rawPrefix
+                Prefix   = $rawPrefix.Length -gt $MaxPrefixLength ? [string]$rawPrefix[0..2] : [string]$rawPrefix
                 Keyword  = $match[2].Value 
                 ID       = $null
                 Title    = $match[4].Value
