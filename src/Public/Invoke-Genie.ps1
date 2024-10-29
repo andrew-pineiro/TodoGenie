@@ -107,7 +107,7 @@ function Invoke-Genie {
             }
 
             # BODY COLLECTION
-            if($issueStruct.Prefix.Length -gt 0) {
+            if($issueStruct.Prefix.Trim().Length -gt 0) {
                 for($i = 0; $i -le $bodyLineCount; $i++) {
                     $line = $_.Context.PostContext[$i]
                     if(-not($line)) { continue }
