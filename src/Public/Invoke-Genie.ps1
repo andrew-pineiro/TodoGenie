@@ -91,14 +91,14 @@ function Invoke-Genie {
             $bodyLineCount = $_.Context.PostContext.Count
             
             $rawBody = ''
-            $rawPrefix = $match[1].Value.Trim()
+            $rawPrefix = $match[1].Value
             Write-Debug "$($item):$($lineNumber): ``$($match[0].Value.TrimStart())``"
 
             $issueStruct = @{
                 Line     = $lineNumber
                 File     = $item
                 FullLine = $match[0].Value
-                Prefix   = $rawPrefix.Length -gt $MaxPrefixLength ? $rawPrefix[0..2] : $rawPrefix
+                Prefix   = $rawPrefix.Length -gt $MaxPrefixLength ? [string]$rawPrefix[0..2] : [string]$rawPrefix
                 Keyword  = $match[2].Value 
                 ID       = $null
                 Title    = $match[4].Value
@@ -107,18 +107,18 @@ function Invoke-Genie {
             }
 
             # BODY COLLECTION
-            if($issueStruct.Prefix.Length -gt 0) {
+            if($issueStruct.Prefix.Trim().Length -gt 0) {
                 for($i = 0; $i -le $bodyLineCount; $i++) {
                     $line = $_.Context.PostContext[$i]
                     if(-not($line)) { continue }
                     if($line -match "$($issueStruct.Prefix)\s*$($issueStruct.Keyword)") { continue }
 
-                    if($line.TrimStart().StartsWith($issueStruct.Prefix) -and $line.Length -gt 3) {
+                    if($line.TrimStart().StartsWith($issueStruct.Prefix.Trim()) -and $line.Length -gt 3) {
                         Write-Debug "$($item):$($lineNumber): LINE: $($line.TrimStart())"
-                        Write-Debug "$($issueStruct.File):$($issueStruct.Line): Prefix Used: $($issueStruct.Prefix)"
+                        Write-Debug "$($issueStruct.File):$($issueStruct.Line): Prefix Used: $($issueStruct.Prefix.Trim())"
                         Write-Debug "$($issueStruct.File):$($issueStruct.Line): Adding to body: $($line.Replace($issueStruct.Prefix, ''))"
                         
-                        $rawBody += "$($line.Replace($issueStruct.Prefix, ''))`n"
+                        $rawBody += "$($line.Replace($issueStruct.Prefix.Trim(), ''))`n"
                     }
                 }
             }
