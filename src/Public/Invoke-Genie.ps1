@@ -91,7 +91,7 @@ function Invoke-Genie {
             $bodyLineCount = $_.Context.PostContext.Count
             
             $rawBody = ''
-            $rawPrefix = $match[1].Value.Trim()
+            $rawPrefix = $match[1].Value
             Write-Debug "$($item):$($lineNumber): ``$($match[0].Value.TrimStart())``"
 
             $issueStruct = @{
@@ -113,12 +113,12 @@ function Invoke-Genie {
                     if(-not($line)) { continue }
                     if($line -match "$($issueStruct.Prefix)\s*$($issueStruct.Keyword)") { continue }
 
-                    if($line.TrimStart().StartsWith($issueStruct.Prefix) -and $line.Length -gt 3) {
+                    if($line.TrimStart().StartsWith($issueStruct.Prefix.Trim()) -and $line.Length -gt 3) {
                         Write-Debug "$($item):$($lineNumber): LINE: $($line.TrimStart())"
-                        Write-Debug "$($issueStruct.File):$($issueStruct.Line): Prefix Used: $($issueStruct.Prefix)"
+                        Write-Debug "$($issueStruct.File):$($issueStruct.Line): Prefix Used: $($issueStruct.Prefix.Trim())"
                         Write-Debug "$($issueStruct.File):$($issueStruct.Line): Adding to body: $($line.Replace($issueStruct.Prefix, ''))"
                         
-                        $rawBody += "$($line.Replace($issueStruct.Prefix, ''))`n"
+                        $rawBody += "$($line.Replace($issueStruct.Prefix.Trim(), ''))`n"
                     }
                 }
             }
