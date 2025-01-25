@@ -7,6 +7,8 @@ function New-GitIssue {
     )
 
     $apiKey = Get-ApiKey
+    Get-AllGitIssues $rootDirectory -State open | ForEach-Object { if($issue -eq $_.title.Replace("[Automated] ", "")) { Write-Error "Issue already exists."; break 1}}
+
     $gitModuleURL = "https://github.com/andrew-pineiro/TodoGenie/"
     $gitData = (Get-Content ($rootDirectory + $DirectorySeparator + ".git" + $DirectorySeparator + "config") | 
                         Select-String "url = https://github.com/(.+)/(.+).git").Matches

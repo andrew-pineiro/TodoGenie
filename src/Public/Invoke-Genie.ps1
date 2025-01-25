@@ -76,7 +76,7 @@ function Invoke-Genie {
 
     foreach($item in $Items) {
         #TODO: Fix issue with multiple dirs excluding more than expected
-        if(($excludedDirs | % {$item -like "$_/*"})) {
+        if(($excludedDirs | ForEach-Object {$item -like "$_/*"})) {
             Write-Debug "$item excluded"
             continue
         }
@@ -152,7 +152,7 @@ function Invoke-Genie {
                 $outMessage = "$([string]::IsNullOrEmpty($_.Prefix) ? $_.FullLine.Trim() : $_.FullLine.Trim().Replace($_.Prefix, ''))"
                 Write-Host "+ $($_.File):$($_.Line): $outMessage"
                 if(-not([string]::IsNullOrEmpty($_.Body))) {
-                    ($_.Body.Split("`n") | % { 
+                    ($_.Body.Split("`n") | ForEach-Object { 
                         Write-Host "`t+ $($_.Trim())" 
                     })
                 }
