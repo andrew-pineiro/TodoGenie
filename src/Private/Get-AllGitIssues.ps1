@@ -32,7 +32,7 @@ function Get-AllGitIssues {
         "X-GitHub-Api-Version" = "2022-11-28"
     }
     try {
-        $response = Invoke-WebRequest -Uri "$($BaseUri)?state=closed" -Headers $Headers -Method Get 
+        $response = Invoke-WebRequest -Uri "$($BaseUri)?state=$state" -Headers $Headers -Method Get 
         $responseHeaders = $response.Headers
         $responseData = $response.Content | ConvertFrom-Json
         $attemptsLeft = $responseHeaders."X-Ratelimit-Remaining"
@@ -45,7 +45,7 @@ function Get-AllGitIssues {
                 Write-Debug "Page Count: $pageCount"
                 for ($i = 2; $i -le $pageCount; $i++) {
                     Write-Debug "Working on page $i"
-                    $response = Invoke-WebRequest -Uri "$($BaseUri)?state=closed&page=$i" -Headers $Headers -Method Get
+                    $response = Invoke-WebRequest -Uri "$($BaseUri)?state=$state&page=$i" -Headers $Headers -Method Get
                     $responseData += $response.Content | ConvertFrom-Json
                 }
             }
