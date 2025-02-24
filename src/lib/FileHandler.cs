@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.RegularExpressions;
+
 public class FileHandler {
     private static List<string> IgnoredFiles = new();
     private static List<string> IgnoredDirs = new();
@@ -40,13 +41,14 @@ public class FileHandler {
             if (IgnoredFiles.Any(f => f == file)) {
                 continue;
             }
-            //TODO: not working
-            if (IgnoredDirs.Any(d => Console.WriteLine(d))) {
-                Console.WriteLine($"Skipping file {file}");
+            if (IgnoredDirs.Any(d => file.Contains(d))) {
                 continue;
             }
             Files.Add(file);
         }
         return Files;
+    }
+    public string ReadFile(string filePath) {
+        return File.ReadAllText(filePath);
     }
 }

@@ -8,7 +8,6 @@ var dir = args[0];
 
 var files = handler.GetAllValidFiles(dir);
 foreach(var file in files) {
-     Console.WriteLine("---------------------");
-     Console.WriteLine(file);
-     Console.WriteLine("---------------------");
+    var todo = Todo.GatherTodoForFile(handler.ReadFile(file));
+    if(!string.IsNullOrEmpty(todo)) { Console.WriteLine(todo); }
 }
