@@ -1,0 +1,52 @@
+using System.IO;
+using System.Text.RegularExpressions;
+public class FileHandler {
+    private static List<string> IgnoredFiles = new();
+    private static List<string> IgnoredDirs = new();
+    private static List<string> Files = new();
+    private bool checkForGit(string dir) {
+        return Directory.Exists(Path.Join(dir, ".git"));
+    }
+    private string checkGitIgnore(string dir) {
+        string ignoreFile = string.Empty;
+        var files = Directory.EnumerateFiles(dir, ".gitignore", SearchOption.AllDirectories);
+        foreach(var file in files) {
+            ignoreFile = file;
+        }
+        var buf = File.ReadAllText(ignoreFile);
+        foreach(var token in buf.Split('\n')) {
+            if(token.StartsWith("#")) {
+                continue;
+            }
+            if(token.IndexOf('/') >= 0) {
+                var newToken = token.Replace("/", Path.DirectorySeparatorChar.ToString());
+                IgnoredDirs.Add(newToken);
+                continue;
+            }
+            IgnoredFiles.Add(token);
+        }
+        return ignoreFile;
+    } 
+    public System.Collections.Generic.IEnumerable<string> GetAllValidFiles(string dir) {
+        if (!checkForGit(dir)) {
+            Error.Critical($"no valid .git directory found in {dir}");
+        }
+        checkGitIgnore(dir);
+        var files = Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories);
+        foreach(var file in files) {
+            if (file.Contains(".git")) {
+                continue;
+            }
+            if (IgnoredFiles.Any(f => f == file)) {
+                continue;
+            }
+            //TODO: not working
+            if (IgnoredDirs.Any(d => Console.WriteLine(d))) {
+                Console.WriteLine($"Skipping file {file}");
+                continue;
+            }
+            Files.Add(file);
+        }
+        return Files;
+    }
+}
