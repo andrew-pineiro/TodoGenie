@@ -16,9 +16,17 @@ public class FileHandler {
         }
         var buf = File.ReadAllText(ignoreFile);
         foreach(var token in buf.Split('\n')) {
+            //Ignore comments
             if(token.StartsWith("#")) {
                 continue;
             }
+
+            //Ignore explicit included items
+            if(token.StartsWith('!')) {
+                continue;
+            }
+
+            //Handle directories seperately
             if(token.IndexOf('/') >= 0) {
                 var newToken = token.Replace("/", Path.DirectorySeparatorChar.ToString());
                 IgnoredDirs.Add(newToken);
