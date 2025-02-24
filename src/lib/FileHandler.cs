@@ -41,6 +41,9 @@ public class FileHandler {
             if (IgnoredFiles.Any(f => f == file)) {
                 continue;
             }
+            //TODO: Look to improve this as it will exclude ANY path with the dir name
+            //      It should look to only exclude based on wild card. For example with "bin/"
+            //      It should exclude ROOT_DIR/bin/* as opposed to excluding ROOT_DIR/src/bin/* as well
             if (IgnoredDirs.Any(d => file.Contains(d))) {
                 continue;
             }
