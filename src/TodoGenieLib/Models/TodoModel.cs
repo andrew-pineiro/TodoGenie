@@ -1,4 +1,4 @@
-namespace Models;
+namespace TodoGenieLib.Models;
 public class TodoModel {
     
     // $issueStruct = @{

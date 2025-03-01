@@ -1,6 +1,6 @@
-using Utils;
+using TodoGenieLib.Utils;
 
-namespace Functions;
+namespace TodoGenieLib.Functions;
 public class FileFunctions {
     private List<string> IgnoredFiles = new();
     private List<string> IgnoredDirs = new();
@@ -8,7 +8,7 @@ public class FileFunctions {
     private bool checkForGit(string dir) {
         return Directory.Exists(Path.Join(dir, ".git"));
     }
-    private string checkGitIgnore(string dir) {
+    private string CheckGitIgnore(string dir) {
         string ignoreFile = string.Empty;
         var files = Directory.EnumerateFiles(dir, ".gitignore", SearchOption.AllDirectories);
         foreach(var file in files) {
@@ -27,7 +27,7 @@ public class FileFunctions {
                     continue;
                 }
                 //Handle directories seperately
-                if(token.IndexOf('/') >= 0) {
+                if(token.Contains('/')) {
                     var newToken = token.Replace("/", Path.DirectorySeparatorChar.ToString());
                     IgnoredDirs.Add(newToken);
                     continue;
@@ -41,7 +41,7 @@ public class FileFunctions {
         if (!checkForGit(dir)) {
             Error.Critical($"no valid .git directory found in {dir}");
         }
-        checkGitIgnore(dir);
+        CheckGitIgnore(dir);
         var files = Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories);
         foreach(var file in files) {
             if (file.Contains(".git")) {
@@ -56,8 +56,5 @@ public class FileFunctions {
             Files.Add(file);
         }
         return Files;
-    }
-    public string[] ReadFile(string filePath) {
-        return File.ReadAllLines(filePath);
     }
 }

@@ -1,7 +1,7 @@
-namespace Utils;
+namespace TodoGenieLib.Utils;
 public static class Error {
     public static string LogDirectory { get; set; } = string.Empty;
-    private static string getCurrTime() {
+    private static string GetCurrTime() {
         return DateTime.Now.ToString("u");
     }
     public static void Log(string message) {
@@ -12,12 +12,12 @@ public static class Error {
         if(!File.Exists(logFile)) {
             using (StreamWriter sw = File.CreateText(logFile))
             {
-                sw.WriteLine($"[{getCurrTime()}] {message}");
+                sw.WriteLine($"[{GetCurrTime()}] {message}");
             }
             return;
         }
         using (StreamWriter sw = File.AppendText(logFile)) {
-            sw.WriteLine($"[{getCurrTime()}] {message}");
+            sw.WriteLine($"[{GetCurrTime()}] {message}");
         }
     }
     public static void WriteConsole(string message) {

@@ -1,7 +1,7 @@
-﻿using Utils;
-using Functions;
+﻿using TodoGenieLib.Utils;
+using TodoGenieLib.Functions;
 
-FileFunctions handler = new();
+FileFunctions funcs = new();
 Error.LogDirectory = "C:\\Users\\Chill\\Repositories\\TodoGenie\\.logs";
 if(args.Length < 1 || string.IsNullOrEmpty(args[0])) {
     Console.WriteLine($"Usage: .\\{AppDomain.CurrentDomain.FriendlyName} [git directory]");
@@ -9,7 +9,7 @@ if(args.Length < 1 || string.IsNullOrEmpty(args[0])) {
 }
 var dir = args[0];
 
-var files = handler.GetAllValidFiles(dir);
+var files = funcs.GetAllValidFiles(dir);
 foreach(var file in files) {
     var todos = TodoFunctions.GatherTodoForFile(file);
     foreach(var todo in todos) {
