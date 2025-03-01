@@ -4,9 +4,9 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib", "src\lib\lib.csproj", "{8C318457-B2F6-5F74-188F-CC8D5F235C4A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoGenieLib", "src\TodoGenieLib\TodoGenieLib.csproj", "{8C318457-B2F6-5F74-188F-CC8D5F235C4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "console", "src\console\console.csproj", "{524082A4-505F-2DF4-61E3-52E3499CC8B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoGenie", "src\TodoGenie\TodoGenie.csproj", "{524082A4-505F-2DF4-61E3-52E3499CC8B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

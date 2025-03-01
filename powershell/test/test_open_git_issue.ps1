@@ -1,3 +1,6 @@
+[CmdletBinding()]
+param()
+
 # TODO(#50): This issue is a test 
 
 <#

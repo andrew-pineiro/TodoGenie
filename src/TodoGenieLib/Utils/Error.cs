@@ -1,3 +1,4 @@
+namespace Utils;
 public static class Error {
     public static string LogDirectory { get; set; } = string.Empty;
     private static string getCurrTime() {
