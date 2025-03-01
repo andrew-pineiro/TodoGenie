@@ -8,12 +8,10 @@ public static class Error {
         if(string.IsNullOrEmpty(LogDirectory) || !Directory.Exists(LogDirectory)) {
             return;
         }
-        var logFile = Path.Join(LogDirectory, $"{DateTime.Now.Date.ToString("yyyy-MM-dd")}-todogenie.log");
+        var logFile = Path.Join(LogDirectory, $"{DateTime.Now.Date:yyyy-MM-dd}-todogenie.log");
         if(!File.Exists(logFile)) {
-            using (StreamWriter sw = File.CreateText(logFile))
-            {
-                sw.WriteLine($"[{GetCurrTime()}] {message}");
-            }
+            using StreamWriter sw = File.CreateText(logFile);
+            sw.WriteLine($"[{GetCurrTime()}] {message}");
             return;
         }
         using (StreamWriter sw = File.AppendText(logFile)) {
@@ -32,6 +30,6 @@ public static class Error {
         message = "CRITICAL: " + message;
         Log(message);
         Console.WriteLine($"{message}");
-        System.Environment.Exit(1);
+        Environment.Exit(1);
     }
 }

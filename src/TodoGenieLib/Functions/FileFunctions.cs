@@ -44,13 +44,9 @@ public class FileFunctions {
         CheckGitIgnore(dir);
         var files = Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories);
         foreach(var file in files) {
-            if (file.Contains(".git")) {
-                continue;
-            }
-            if (IgnoredFiles.Any(f => f == file)) {
-                continue;
-            }
-            if (IgnoredDirs.Any(file.Contains)) {
+            if (file.Contains(".git") ||
+                    IgnoredFiles.Any(f => f == file ||
+                        IgnoredDirs.Any(file.Contains))) {
                 continue;
             }
             Files.Add(file);
