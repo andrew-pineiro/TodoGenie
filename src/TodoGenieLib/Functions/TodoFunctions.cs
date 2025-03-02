@@ -1,7 +1,6 @@
 using TodoGenieLib.Models;
 using System.Text.RegularExpressions;
 using TodoGenieLib.Utils;
-using System.Net;
 
 namespace TodoGenieLib.Functions;
 public static class TodoFunctions {
@@ -18,13 +17,11 @@ public static class TodoFunctions {
             foreach(var line in contents) {
                 var match = Regex.Match(line, TodoRegex);
                 if(match.Success) {
-                    _ = filePath.Replace($".{Path.DirectorySeparatorChar}", "");
-                    _ = rootDir.Replace($".{Path.DirectorySeparatorChar}", "");
                     var rawPrefix = match.Groups[1].Value.Trim();
 
                     TodoModel model = new(){
                         LineNumber = lineNumber,
-                        FilePath = filePath.Replace(rootDir, ""),
+                        FilePath = filePath,
                         FullLine = match.Value,
                         Prefix = (rawPrefix.Length > TodoModel.MAX_PREFIX_LEN) ? rawPrefix[..TodoModel.MAX_PREFIX_LEN] : rawPrefix,
                         Keyword = match.Groups[2].Value,
@@ -39,25 +36,51 @@ public static class TodoFunctions {
                 lineNumber++;
             }
         } catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException) {
-            Error.Write($"file not found {filePath}");
+            Error.Write($"File not found {filePath}");
         } catch (Exception e) {
-            Error.Critical($"unexpected exception {e}");
+            //log and crash if other exception besides not found
+            Error.Critical($"Unexpected exception {e}");
         }
         
         return FileTodos;
     }
-    public static HttpStatusCode CreateTodoOnGithub(TodoModel model, string apiKey, string url, string endpoint) {
+    public static TodoModel CreateTodoOnGithub(TodoModel model, string apiKey, string url, string endpoint) {
         HttpSender http = new();
 
         string body = $"**Created On:** {DateTime.Now.Date:U} <br />**Created By:** [TodoGenie]({GithubURL}) <br /><br />**Additional Comments:** <br/> {model.Body}";
-        GithubModel gitModel = new() {
+        GithubModel.GithubSendModel gitModel = new() {
             Title = "[Automated] " + model.Title,
             Body = body
         };
-        //FIXME: keep getting 400 reply...
-        var res = http.Send<GithubModel>(Crypt.Decrypt(apiKey), "POST", gitModel, url, endpoint);
-        Console.WriteLine($"DEBUG: {res}");
-        return res.StatusCode;
+        //FIXME: no encryption happening right now...
+        //var token = Crypt.Decrypt(apiKey);
+
+        var res = http.Send(apiKey, "POST", gitModel, url, endpoint);
+        var replyModel = res.Headers;
+        if(!string.IsNullOrEmpty(replyModel.Location!.ToString())) {
+            //parse id out of Location URL
+            model.Id = replyModel.Location.ToString()[(replyModel.Location!.ToString().LastIndexOf('/')+1)..];
+
+            //parse browser url from Location URL
+            model.IssueUrl = replyModel.Location.ToString().Replace("api.", "").Replace("/repos", "");
+        }
+        return model;
          
+    }
+    public static void UpdateTodoInFile(TodoModel model) {
+        if(string.IsNullOrEmpty(model.FilePath)) {
+            Error.Write($"Unable to update Todo {model.Title} as FilePath does not exist");
+            return;
+        }
+
+        var content = File.ReadAllLines(model.FilePath)
+            //per line: check index + 1 (current line number) against known TODO line number
+            //if found replace with (#id) and store line
+            .Select((line, index) => index +1 == model.LineNumber
+                ? line.Replace(model.Keyword!, $"{model.Keyword}(#{model.Id})")
+                : line)
+            .ToArray();
+
+        File.WriteAllLines(model.FilePath, content);
     }
 }

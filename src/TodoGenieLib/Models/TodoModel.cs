@@ -12,4 +12,5 @@ public class TodoModel {
     public required string Title { get; set; }
     public string? Body { get; set; }
     public string? State { get; set; }
+    public string? IssueUrl { get; set; }
 }
