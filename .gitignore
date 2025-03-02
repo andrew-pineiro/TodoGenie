@@ -4,4 +4,4 @@ obj/
 publish/
 *.csproj.user
 
-*.secret
+token.secret
