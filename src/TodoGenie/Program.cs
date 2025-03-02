@@ -8,7 +8,7 @@ Error.LogDirectory = $"{ROOT_DIR}\\.logs";
 //TODO: store apiToken in file
 string token = string.Empty;
 try {
-    token = File.ReadAllText($"{ROOT_DIR}\\token.secret")
+    token = File.ReadAllText($"{ROOT_DIR}\\token.secret");
 } catch (Exception e) {
     Error.Critical($"Unable to find Github Token: {e.Message}");
 }
