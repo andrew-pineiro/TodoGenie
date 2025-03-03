@@ -52,12 +52,14 @@ public static class TodoFunctions {
             Title = "[Automated] " + model.Title,
             Body = body
         };
-        //FIXME: no encryption happening right now...
-        //var token = Crypt.Decrypt(apiKey);
 
-        var res = http.Send(apiKey, "POST", gitModel, url, endpoint);
+        var res = http.Send(Crypt.Decrypt(apiKey), "POST", gitModel, url, endpoint);
+        if(!res.IsSuccessStatusCode) {
+            Error.Write($"Error creating Github issue: {res.ReasonPhrase}");
+            return model;
+        }
         var replyModel = res.Headers;
-        if(!string.IsNullOrEmpty(replyModel.Location!.ToString())) {
+        if(replyModel.Location != null) {
             //parse id out of Location URL
             model.Id = replyModel.Location.ToString()[(replyModel.Location!.ToString().LastIndexOf('/')+1)..];
 

@@ -18,7 +18,6 @@ public class HttpSender
         sender.DefaultRequestHeaders.Add("User-Agent", "todogenie-v1.0");
         sender.DefaultRequestHeaders.Add("X-Github-Api-Version", "2022-11-28");
         sender.DefaultRequestHeaders.Add("Authorization", "Bearer " + apiKey);
-
         var _method = new HttpMethod(method);
         HttpResponseMessage response = _method.ToString().ToUpper() switch
         {
