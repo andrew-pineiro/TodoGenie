@@ -28,7 +28,7 @@ public class FileFunctions {
                 }
                 //Handle directories seperately
                 if(token.Contains('/')) {
-                    var newToken = token.Replace("/", Path.DirectorySeparatorChar.ToString());
+                    var newToken = token.Replace("/", "");
                     IgnoredDirs.Add(newToken);
                     continue;
                 }
@@ -37,13 +37,16 @@ public class FileFunctions {
         }
         return ignoreFile;
     } 
-    public IEnumerable<string> GetAllValidFiles(string dir) {
+    public IEnumerable<string> GetAllValidFiles(string dir, List<string> excludedDirs) {
         if (!checkForGit(dir)) {
             Error.Critical($"no valid .git directory found in {dir}");
         }
         CheckGitIgnore(dir);
         var files = Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories);
         foreach(var file in files) {
+            if (excludedDirs.Any(file.Contains)) {
+                continue;
+            }
             if (file.Contains(".git") ||
                     IgnoredFiles.Any(f => f == file ||
                         IgnoredDirs.Any(file.Contains))) {

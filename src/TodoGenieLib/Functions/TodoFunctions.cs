@@ -21,7 +21,7 @@ public static class TodoFunctions {
 
                     TodoModel model = new(){
                         LineNumber = lineNumber,
-                        FilePath = filePath,
+                        FilePath = filePath.Replace(rootDir+Path.DirectorySeparatorChar.ToString(), ""),
                         FullLine = match.Value,
                         Prefix = (rawPrefix.Length > TodoModel.MAX_PREFIX_LEN) ? rawPrefix[..TodoModel.MAX_PREFIX_LEN] : rawPrefix,
                         Keyword = match.Groups[2].Value,
@@ -30,8 +30,6 @@ public static class TodoFunctions {
                         Body = string.Empty,
                         State = string.Empty
                     };
-
-                    FileTodos.Add(model);
                 }
                 lineNumber++;
             }
