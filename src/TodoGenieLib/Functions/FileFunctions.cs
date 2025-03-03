@@ -1,18 +1,14 @@
-using System.Text;
 using System.Text.RegularExpressions;
 using TodoGenieLib.Models;
-using TodoGenieLib.Utils;
 
 namespace TodoGenieLib.Functions;
 public class FileFunctions {
-    private List<string> IgnoredFiles = new();
-    private List<string> IgnoredDirs = new();
-    private List<string> Files = new();
-    private bool checkForGit(string dir) {
+    public static bool CheckForGit(string dir) {
         return Directory.Exists(Path.Join(dir, ".git"));
     }
-    private string CheckGitIgnore(string dir) {
+    public static HashSet<string> CheckGitIgnore(string dir) {
         string ignoreFile = string.Empty;
+        HashSet<string> ignoredFiles = [".git"];
         var files = Directory.EnumerateFiles(dir, ".gitignore", SearchOption.AllDirectories);
         foreach(var file in files) {
             ignoreFile = file;
@@ -21,44 +17,58 @@ public class FileFunctions {
             var buf = File.ReadAllText(ignoreFile);
             
             foreach(var token in buf.Split('\n')) {
-                //Ignore comments
-                if(token.StartsWith("#")) {
+                if(token.StartsWith('#') || token.StartsWith('!') || string.IsNullOrEmpty(token)) {
                     continue;
                 }
-                //Ignore explicit included items
-                if(token.StartsWith('!')) {
-                    continue;
-                }
-                //Handle directories seperately
-                if(token.Contains('/')) {
-                    var newToken = token.Replace("/", "");
-                    IgnoredDirs.Add(newToken);
-                    continue;
-                }
-                IgnoredFiles.Add(token);
+                ignoredFiles.Add(token.Replace("/", ""));
             }
         }
-        return ignoreFile;
+        return ignoredFiles;
     } 
-    public IEnumerable<string> GetAllValidFiles(string dir, List<string> excludedDirs) {
-        if (!checkForGit(dir)) {
-            Error.Critical($"no valid .git directory found in {dir}");
-        }
-        CheckGitIgnore(dir);
-        var files = Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories);
-        foreach(var file in files) {
-            if (excludedDirs.Any(file.Contains)) {
-                continue;
-            }
-            if (file.Contains(".git") ||
-                    IgnoredFiles.Any(f => f == file ||
-                        IgnoredDirs.Any(file.Contains))) {
-                continue;
-            }
-            Files.Add(file);
-        }
-        return Files;
+    public static IEnumerable<string> EnumerateFiles(string path, HashSet<string> excludedDirectories)
+    {
+        var fileCollection = new List<string>(); // Using List instead of ConcurrentBag since we control recursion
+        TraverseDirectory(path, excludedDirectories, fileCollection);
+        return fileCollection;
     }
+
+    private static void TraverseDirectory(string directory, HashSet<string> excludedDirectories, List<string> fileCollection)
+    {
+        try
+        {
+            foreach (var subDir in Directory.GetDirectories(directory))
+            {
+                if (!IsExcluded(subDir, excludedDirectories))
+                {
+                    TraverseDirectory(subDir, excludedDirectories, fileCollection); // Recursively process allowed directories
+                }
+            }
+            foreach (var file in Directory.GetFiles(directory))
+            {
+                fileCollection.Add(file);
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Skip directories we can't access
+        }
+    }
+
+    private static bool IsExcluded(string fullPath, HashSet<string> excludedDirectories)
+    {
+        DirectoryInfo dir = new DirectoryInfo(fullPath);
+
+        while (dir != null)
+        {
+            if (excludedDirectories.Any(e => e.Contains(dir.Name)))
+                return true;
+
+            dir = dir.Parent!;
+        }
+
+        return false;
+    }
+    
     public static string GetGithubEndpoint(string rootDir) {
         string endpoint = string.Empty;
         var content = File.ReadAllLines(Path.Join(rootDir, ".git", "config"));
@@ -71,28 +81,7 @@ public class FileFunctions {
         }
         return endpoint;
     }
-    public static ConfigModel SetupConfigDir(ConfigModel config) {
-        if(!Directory.Exists(config.ConfigDirectory) && !string.IsNullOrEmpty(config.ConfigDirectory)) {
-            Directory.CreateDirectory(config.ConfigDirectory);
-        }
-        string secretFile = Path.Join(config.ConfigDirectory, config.SecretFileName); 
-        if(!File.Exists(secretFile)) {
-            var stream = File.Create(secretFile);
-            string tempKey = string.Empty;
-            while(string.IsNullOrEmpty(tempKey)) {
-                Console.Write("Enter Github Api Key: ");
-                tempKey = Console.ReadLine()!;
-            }
-            
-            config.GithubApiKey = Crypt.Encrypt(tempKey);
-   
-            var contents = new UTF8Encoding(true).GetBytes("{ \"GithubApiKey\": \"" + config.GithubApiKey + "\" }");
-   
-            stream.Write(contents, 0, contents.Length);
-            stream.Close();
-        }    
-        return config;
-    }
+    
     public static void SetConfig(ConfigModel config) {
         //TODO: setup saving to config file
         throw new NotImplementedException();

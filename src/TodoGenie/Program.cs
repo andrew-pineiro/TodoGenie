@@ -12,16 +12,17 @@ ConfigModel config = Utils.ParseArgs(args);
 Error.LogDirectory = $"{config.RootDirectory}\\.logs";
 
 FileFunctions funcs = new();
+TodoFunctions todoFuncs = new();
 List<TodoFileModel> todos = [];
 
-var files = funcs.GetAllValidFiles(config.RootDirectory!, config.ExcludedDirs);
+var files = todoFuncs.GetAllValidFiles(config.RootDirectory!, config.ExcludedDirs);
 if(config.Command != "config") {
     foreach(var file in files) {
         //TODO: allow for directory exclusions
-        //TODO: match args to powershell version
+        //TODO: match args to powershell version 
         todos.Add(new TodoFileModel() {
             File = file,
-            Todos = TodoFunctions.GetTodoFromFile(file, config.RootDirectory!)
+            Todos = todoFuncs.GetTodoFromFile(file, config.RootDirectory!).Result
         }); 
     }    
 }
@@ -34,7 +35,6 @@ switch(config.Command) {
         }
         break;
     case "create":
-        //TODO: gather project details from .git
         string url = "https://api.github.com";
         string endpoint = FileFunctions.GetGithubEndpoint(config.RootDirectory);
 

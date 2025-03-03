@@ -5,14 +5,14 @@ using TodoGenieLib.Utils;
 public static class Utils {
     public static ConfigModel ParseArgs(string[] args) {
         ConfigModel config = new();
-        config = FileFunctions.SetupConfigDir(config);
+        config = ConfigFunctions.SetupConfigDir(config);
         int argCount = args.Length;
         if (argCount < 1) {
             return config;
         }
         for(int i = 0; i < argCount; i++) {
             try {
-                switch(args[i]) {
+                switch(args[i].ToLower()) {
                     case "--command":
                         var tempCommand = args[i+1].ToLower();
                         if(!new List<string>{"list", "prune", "create", "config"}.Contains(tempCommand)) {
@@ -20,7 +20,7 @@ public static class Utils {
                         }
                         config.Command = tempCommand;
                         break;
-                    case "--apiKey":
+                    case "--apikey":
                         config.GithubApiKey = args[i+1];
                         break;
                     case "--rootdir":

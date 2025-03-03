@@ -3,15 +3,15 @@ using System.Text.RegularExpressions;
 using TodoGenieLib.Utils;
 
 namespace TodoGenieLib.Functions;
-public static class TodoFunctions {
+public class TodoFunctions {
     
     private static readonly string TodoRegex = @"^(.*)(TODO)(.*):\s*(.*)";
     private static readonly string GithubURL = "https://github.com/andrew-pineiro/TodoGenie";
 
-    public static List<TodoModel> GetTodoFromFile(string filePath, string rootDir) {
+    public async Task<List<TodoModel>> GetTodoFromFile(string filePath, string rootDir) {
         List<TodoModel> FileTodos = [];
         try {
-            var contents = File.ReadAllLines(filePath);
+            var contents = await File.ReadAllLinesAsync(filePath);
             int lineNumber = 1;
             
             foreach(var line in contents) {
@@ -84,5 +84,15 @@ public static class TodoFunctions {
             .ToArray();
 
         File.WriteAllLines(model.FilePath, content);
+    }
+    public IEnumerable<string> GetAllValidFiles(string dir, HashSet<string> excludedDirs) {
+        if (!FileFunctions.CheckForGit(dir)) {
+            Error.Critical($"no valid .git directory found in {dir}");
+        }
+        FileFunctions funcs = new();
+        var ignoredFiles = FileFunctions.CheckGitIgnore(dir);
+        ignoredFiles.UnionWith(excludedDirs);
+        var files = FileFunctions.EnumerateFiles(dir, ignoredFiles);
+        return files;
     }
 }
