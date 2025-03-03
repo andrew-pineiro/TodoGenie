@@ -1,5 +1,5 @@
-using TodoGenieLib.Models;
 using System.Text.RegularExpressions;
+using TodoGenieLib.Models;
 using TodoGenieLib.Utils;
 
 namespace TodoGenieLib.Functions;

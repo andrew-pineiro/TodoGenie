@@ -1,12 +1,6 @@
 ﻿using TodoGenieLib.Utils;
 using TodoGenieLib.Functions;
 using TodoGenieLib.Models;
-    
-// if(args.Length < 1 || string.IsNullOrEmpty(args[0])) {
-//     Console.WriteLine($"Usage: .\\{AppDomain.CurrentDomain.FriendlyName} [git directory]");
-//     Console.WriteLine("ERROR: Insufficent arguments supplied");
-//     Environment.Exit(1);
-// }
 
 ConfigModel config = Utils.ParseArgs(args);
 Error.LogDirectory = $"{config.RootDirectory}\\.logs";
