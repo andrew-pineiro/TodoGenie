@@ -15,15 +15,16 @@ FileFunctions funcs = new();
 List<TodoFileModel> todos = [];
 
 var files = funcs.GetAllValidFiles(config.RootDirectory!, config.ExcludedDirs);
-
-foreach(var file in files) {
-    //TODO: allow for directory exclusions
-    //TODO: match args to powershell version
-    todos.Add(new TodoFileModel() {
-        File = file,
-        Todos = TodoFunctions.GetTodoFromFile(file, config.RootDirectory!)
-    }); 
-}    
+if(config.Command != "config") {
+    foreach(var file in files) {
+        //TODO: allow for directory exclusions
+        //TODO: match args to powershell version
+        todos.Add(new TodoFileModel() {
+            File = file,
+            Todos = TodoFunctions.GetTodoFromFile(file, config.RootDirectory!)
+        }); 
+    }    
+}
 switch(config.Command) {
     case "list":
         foreach(var todoFile in todos) {
@@ -35,8 +36,11 @@ switch(config.Command) {
     case "create":
         //TODO: gather project details from .git
         string url = "https://api.github.com";
-        string endpoint = Utils.GetGithubEndpoint(config.RootDirectory);
+        string endpoint = FileFunctions.GetGithubEndpoint(config.RootDirectory);
 
+        if(string.IsNullOrEmpty(endpoint)) {
+            Error.Critical("Unable to set Github API endpoint from .git config file.");
+        }
         if(string.IsNullOrEmpty(config.GithubApiKey)) {
             Error.Critical("Api Key is not valid");
         }
@@ -67,6 +71,12 @@ switch(config.Command) {
                 }
             }
         }
+        break;
+    case "config":
+        if(string.IsNullOrEmpty(config.GithubApiKey)) {
+            Error.Critical("Must specify --apiKey when using `config` command");
+        }
+        FileFunctions.SetConfig(config);
         break;
     case "prune":
     default:

@@ -27,9 +27,11 @@ public static class TodoFunctions {
                         Keyword = match.Groups[2].Value,
                         Id = match.Groups[3].Value,
                         Title = match.Groups[4].Value,
+                        //TODO: implement body collection
                         Body = string.Empty,
                         State = string.Empty
                     };
+                    FileTodos.Add(model);
                 }
                 lineNumber++;
             }
