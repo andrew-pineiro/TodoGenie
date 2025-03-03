@@ -81,9 +81,5 @@ public class FileFunctions {
         }
         return endpoint;
     }
-    
-    public static void SetConfig(ConfigModel config) {
-        //TODO: setup saving to config file
-        throw new NotImplementedException();
-    }
+
 }

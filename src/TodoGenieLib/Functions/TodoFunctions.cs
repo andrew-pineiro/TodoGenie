@@ -8,7 +8,7 @@ public class TodoFunctions {
     private static readonly string TodoRegex = @"^(.*)(TODO)(.*):\s*(.*)";
     private static readonly string GithubURL = "https://github.com/andrew-pineiro/TodoGenie";
 
-    public async Task<List<TodoModel>> GetTodoFromFile(string filePath, string rootDir) {
+    public static async Task<List<TodoModel>> GetTodoFromFile(string filePath, string rootDir) {
         List<TodoModel> FileTodos = [];
         try {
             var contents = await File.ReadAllLinesAsync(filePath);
@@ -27,7 +27,7 @@ public class TodoFunctions {
                         Keyword = match.Groups[2].Value,
                         Id = match.Groups[3].Value,
                         Title = match.Groups[4].Value,
-                        //TODO: implement body collection
+                        //TODO(#148): implement body collection
                         Body = string.Empty,
                         State = string.Empty
                     };

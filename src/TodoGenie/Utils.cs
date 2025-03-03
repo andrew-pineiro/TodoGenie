@@ -26,6 +26,9 @@ public static class Utils {
                     case "--rootdir":
                         config.RootDirectory = args[i+1];
                         break;
+                    case "--unreported":
+                        config.ShowUnreportedOnly = true;
+                        break;
                     case "--exclude":
                         foreach(var dir in args[i+1].Split(',')) {
                             config.ExcludedDirs.Add(dir);
