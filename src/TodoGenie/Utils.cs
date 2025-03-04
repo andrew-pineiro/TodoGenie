@@ -1,43 +1,7 @@
 using TodoGenieLib.Functions;
 using TodoGenieLib.Models;
 using TodoGenieLib.Utils;
-/*
-    param (
-        [Parameter(Position=1,
-            HelpMessage = "Directory with the .git folder")]
-        [Alias('d','dir')]
-        [string] $gitDirectory = $PWD
-        ,
-        [Parameter(ParameterSetName = 'TestMode',
-            HelpMessage = 'Enables test mode, which runs through all subcommands in the specified -TestDirectory')]
-        [Alias('t','test')]
-        [switch] $testMode
-        ,
-        [Parameter(ParameterSetName = 'TestMode',
-            HelpMessage = 'Test directory to run -TestMode in. Defaults to test/')]
-        [Alias('td', 'testdir')]
-        [string] $testDirectory = "test/"
-        ,
-        [Parameter(
-            HelpMessage = 'Avoids commiting the changes to the repo automatically')]
-        [Alias('n')]
-        [switch] $noAutoCommit
-        ,
-        [Parameter(
-            HelpMessage = 'Shows the syntax/help message')]
-        [Alias('h')]
-        [switch] $help
-        ,
-        [Parameter(
-            HelpMessage = 'Used to update ApiKey')]
-        [string] $newApikey = ""
-        ,
-        [Alias('X')]
-        [Parameter(
-            HelpMessage = 'Excluded Directories (name only), comma seperated [ex: folder1,folder2,folder3]')]
-        [string[]] $excludedDirs
-    )
-*/
+
 public static class Utils {
     public static void PrintUsage() {
         Console.WriteLine("USAGE: Invoke-Genie (list, prune, create) [--GitDirectory [string]] [--TestMode] [--TestDirectory [string]] [--NoAutoCommit] [--Unreported]");
@@ -63,10 +27,9 @@ public static class Utils {
     public static ConfigModel ParseArgs(string[] args) {
         ConfigModel config = new();
 
-        config = ConfigFunctions.SetupConfigDir(config);
-
         int argCount = args.Length;
         if (argCount < 1) {
+            config.GithubApiKey = ConfigFunctions.GetApiKey(config);
             return config;
         }
 
@@ -92,18 +55,17 @@ public static class Utils {
                     case "--unreported": case "-u":
                         config.ShowUnreportedOnly = true;
                         break;
-                    case "--noautocommit":
+                    case "--exclude": case "-x":
+                        foreach(var dir in args[i+1].Split(',')) {
+                            config.ExcludedDirs.Add(dir);
+                        }
+                        break;
+                    case "--noautocommit": case "-n":
                         //TODO: implement this argument
                     case "--testmode": case "-t":
                         //TODO: implement this argument
                     case "--testdirectory": case "-td":
                         //TODO: implement this argument
-                        break;
-                    case "--exclude": case "-e":
-                        foreach(var dir in args[i+1].Split(',')) {
-                            config.ExcludedDirs.Add(dir);
-                        }
-                        break;
                     default:
                         break;
                 }
@@ -112,6 +74,9 @@ public static class Utils {
             } catch (Exception e) {
                 Error.Critical($"Could not parse args {e.Message}");
             }
+        }
+        if(string.IsNullOrEmpty(config.GithubApiKey)) {
+            config.GithubApiKey = ConfigFunctions.GetApiKey(config);
         }
         return config;
     }    

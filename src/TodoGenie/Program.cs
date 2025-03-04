@@ -37,7 +37,7 @@ switch(config.Command) {
             Error.Critical("Unable to set Github API endpoint from .git config file.");
         }
         if(string.IsNullOrEmpty(config.GithubApiKey)) {
-            config.GithubApiKey = ConfigFunctions.GetApiKey(config);
+            Error.Critical("No Github Api Key found.");
         }
         foreach(var todoFile in todos) {
             foreach(var todo in todoFile.Todos.Where(t => string.IsNullOrEmpty(t.Id))) {
