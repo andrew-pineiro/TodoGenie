@@ -46,17 +46,17 @@ public static class Utils {
         PrintUsage();
         Console.WriteLine("\nARGUMENTS");
         Console.WriteLine("\n---- Global ----\n");
-        Console.WriteLine("TestMode - Enables testing mode which runs through all subcommands in the specified -TestDirectory");
-        Console.WriteLine("TestDirectory - Directory to run tests in");
-        Console.WriteLine("GitDirectory - Directory to base TodoGenie in. Needs to have a .git folder");
+        Console.WriteLine("--TestMode [-t] - Enables testing mode which runs through all subcommands in the specified -TestDirectory");
+        Console.WriteLine("--TestDirectory [-td] - Directory to run tests in");
+        Console.WriteLine("--GitDirectory [--dir, -d] - Directory to base TodoGenie in. Needs to have a .git folder");
         Console.WriteLine("\n---- List ----\n");
-        Console.WriteLine("Unreported - Shows only Todos that are unreported to Github");
+        Console.WriteLine("--Unreported [-u]- Shows only Todos that are unreported to Github");
         Console.WriteLine("\n---- Create ----\n");
-        Console.WriteLine("NoAutoCommit - Doesn't commit updated Todo to Github automatically.");
+        Console.WriteLine("--NoAutoCommit - Doesn't commit updated Todo to Github automatically.");
         Console.WriteLine("\n---- Prune ----\n");
         Console.WriteLine("NOT IMPLEMENTED");
         Console.WriteLine("\n---- Config ----\n");
-        Console.WriteLine("ApiKey - Github Api token for creating issues. This will overwrite any existing token");
+        Console.WriteLine("--ApiKey - Github Api token for creating issues. This will overwrite any existing token");
 
 
     }
@@ -86,20 +86,20 @@ public static class Utils {
                     case "--apikey":
                         config.GithubApiKey = args[i+1];
                         break;
-                    case "--gitdirectory":
+                    case "--gitdirectory": case "--dir": case "-d":
                         config.RootDirectory = args[i+1];
                         break;
-                    case "--unreported":
+                    case "--unreported": case "-u":
                         config.ShowUnreportedOnly = true;
                         break;
                     case "--noautocommit":
                         //TODO: implement this argument
-                    case "--testmode":
+                    case "--testmode": case "-t":
                         //TODO: implement this argument
-                    case "--testdirectory":
+                    case "--testdirectory": case "-td":
                         //TODO: implement this argument
                         break;
-                    case "--exclude":
+                    case "--exclude": case "-e":
                         foreach(var dir in args[i+1].Split(',')) {
                             config.ExcludedDirs.Add(dir);
                         }
