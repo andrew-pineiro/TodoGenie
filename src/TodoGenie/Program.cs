@@ -5,11 +5,10 @@ using TodoGenieLib.Models;
 ConfigModel config = Utils.ParseArgs(args);
 Error.LogDirectory = $"{config.RootDirectory}\\.logs";
 
-FileFunctions funcs = new();
 TodoFunctions todoFuncs = new();
 List<TodoFileModel> todos = [];
 
-var files = todoFuncs.GetAllValidFiles(config.RootDirectory!, config.ExcludedDirs);
+var files = FileFunctions.GetAllValidFiles(config.RootDirectory!, config.ExcludedDirs);
 if(config.Command != "config") {
     foreach(var file in files) {
         todos.Add(new TodoFileModel() {
@@ -30,11 +29,10 @@ switch(config.Command) {
         }
         break;
     case "create":
-        string url = "https://api.github.com";
-        string endpoint = FileFunctions.GetGithubEndpoint(config.RootDirectory);
+        config.GithubEndpoint = FileFunctions.GetGithubEndpoint(config.RootDirectory);
 
-        if(string.IsNullOrEmpty(endpoint)) {
-            Error.Critical("Unable to set Github API endpoint from .git config file.");
+        if(string.IsNullOrEmpty(config.GithubEndpoint)) {
+            Error.Critical("Unable to set API endpoint from .git config file.");
         }
         if(string.IsNullOrEmpty(config.GithubApiKey)) {
             Error.Critical("No Github Api Key found.");
@@ -53,7 +51,7 @@ switch(config.Command) {
                 }
                 Console.WriteLine("Creating TODO...");
                 if (string.IsNullOrEmpty(todo.Id)) {
-                    var res = TodoFunctions.CreateTodoOnGithub(todo, config.GithubApiKey!, url, endpoint);
+                    var res = TodoFunctions.CreateTodo(todo, config);
 
                     if (string.IsNullOrEmpty(res.Id)) {
                         continue;

@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using TodoGenieLib.Models;
+using TodoGenieLib.Utils;
 
 namespace TodoGenieLib.Functions;
 public class FileFunctions {
@@ -67,6 +68,36 @@ public class FileFunctions {
         }
 
         return endpoint;
+    }
+    private static HashSet<string> CheckGitIgnore(string dir) {
+        string ignoreFile = string.Empty;
+        HashSet<string> ignoredFiles = [".git"];
+        var files = Directory.EnumerateFiles(dir, ".gitignore", SearchOption.AllDirectories);
+        foreach(var file in files) {
+            ignoreFile = file;
+        }
+        if(!string.IsNullOrEmpty(ignoreFile)) {
+            var buf = File.ReadAllText(ignoreFile);
+            
+            foreach(var token in buf.Split('\n')) {
+                if(token.StartsWith('#') || token.StartsWith('!') || string.IsNullOrEmpty(token)) {
+                    continue;
+                }
+                ignoredFiles.Add(token.Replace("/", ""));
+            }
+        }
+        return ignoredFiles;
+    } 
+    public static IEnumerable<string> GetAllValidFiles(string dir, HashSet<string> excludedDirs) {
+        if (!CheckForGit(dir)) {
+            Error.Critical($"no valid .git directory found in {dir}");
+        }
+        var ignoredFiles = CheckGitIgnore(dir);
+
+        ignoredFiles.UnionWith(excludedDirs);
+
+        var files = EnumerateFiles(dir, ignoredFiles);
+        return files;
     }
 
 }
