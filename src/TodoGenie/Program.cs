@@ -9,12 +9,7 @@ Error.LogDirectory = $"{config.RootDirectory}\\.logs";
 TodoFunctions todoFuncs = new();
 List<TodoFileModel> todos = [];
 GithubRepository gh = new();
-var endpoint = FileFunctions.GetGithubEndpoint(config.RootDirectory);
-if(string.IsNullOrEmpty(endpoint)) {
-    Error.Critical("no endpoint");
-}
-gh.GetAllGithubIssues(config.GithubApiKey, endpoint);
-return;
+
 var files = FileFunctions.GetAllValidFiles(config.RootDirectory!, config.ExcludedDirs);
 if(config.Command != "config") {
     foreach(var file in files) {
@@ -79,6 +74,13 @@ switch(config.Command) {
         ConfigFunctions.SetConfig(config);
         break;
     case "prune":
+        config.GithubEndpoint = FileFunctions.GetGithubEndpoint(config.RootDirectory);
+        if(string.IsNullOrEmpty(config.GithubEndpoint)) {
+            Error.Critical("Unable to retrieve endpoint for Api");
+        }
+
+        gh.GetAllGithubIssues(config);
+        break;
     default:
         Error.Critical($"Command not implemented: {config.Command}");
         break;

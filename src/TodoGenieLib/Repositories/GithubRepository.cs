@@ -32,15 +32,16 @@ public class GithubRepository {
          
     }
 
-    public List<TodoModel> GetAllGithubIssues(string apiKey, string endpoint) {
+    public List<TodoModel> GetAllGithubIssues(ConfigModel config) {
         List<TodoModel> issues = [];
         HttpSender http = new();
-        Console.WriteLine("endpoint: {0}", endpoint);
-        var res = http.Send(Crypt.Decrypt(apiKey), "GET", "", GithubURL, endpoint);
+        Console.WriteLine("DEBUG: endpoint = {0}", config.GithubEndpoint);
+        var res = http.Send(Crypt.Decrypt(config.GithubApiKey), "GET", "", GithubURL, config.GithubEndpoint);
+        Console.WriteLine(res.Content.Headers);
         if(!res.IsSuccessStatusCode) {
             Error.Critical($"Could not retrieve Github issues. Status: {res.StatusCode}");
         }
-        Console.WriteLine(res);
+        
         return issues;
     }
 }
