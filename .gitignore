@@ -4,4 +4,7 @@ obj/
 publish/
 *.csproj.user
 
+# Custom
 *.secret
+build/
+.vscode/
