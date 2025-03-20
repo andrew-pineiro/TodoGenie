@@ -1,3 +1,5 @@
+using System.Net.Http.Json;
+using System.Text.Json;
 using TodoGenieLib.Models;
 using TodoGenieLib.Utils;
 
@@ -23,7 +25,7 @@ public class GithubRepository {
         var replyModel = res.Headers;
         if(replyModel.Location != null) {
             //parse id out of Location URL
-            model.Id = replyModel.Location.ToString()[(replyModel.Location!.ToString().LastIndexOf('/')+1)..];
+            model.Id = int.Parse(replyModel.Location.ToString()[(replyModel.Location!.ToString().LastIndexOf('/')+1)..]);
 
             //parse browser url from Location URL
             model.IssueUrl = replyModel.Location.ToString().Replace("api.", "").Replace("/repos", "");
@@ -35,13 +37,11 @@ public class GithubRepository {
     public List<TodoModel> GetAllGithubIssues(ConfigModel config) {
         List<TodoModel> issues = [];
         HttpSender http = new();
-        Console.WriteLine("DEBUG: endpoint = {0}", config.GithubEndpoint);
-        var res = http.Send(Crypt.Decrypt(config.GithubApiKey), "GET", "", GithubURL, config.GithubEndpoint);
-        Console.WriteLine(res.Content.Headers);
-        if(!res.IsSuccessStatusCode) {
+        var res = http.Send(Crypt.Decrypt(config.GithubApiKey), "GET", "", BaseUrl, config.GithubEndpoint);
+        var content = res.Content.ReadFromJsonAsync<List<TodoModel>>().Result;
+        if(!res.IsSuccessStatusCode || content!.Count == 0) {
             Error.Critical($"Could not retrieve Github issues. Status: {res.StatusCode}");
         }
-        
-        return issues;
+        return content!;
     }
 }

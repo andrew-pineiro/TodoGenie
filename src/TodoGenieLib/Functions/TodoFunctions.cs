@@ -7,6 +7,7 @@ namespace TodoGenieLib.Functions;
 public class TodoFunctions {
     
     private static readonly string TodoRegex = @"^(.*)(TODO)(.*):\s*(.*)";
+    private static readonly string[] ValidPrefix = ["//", "#", "REM", "'", "*", "<--"];
     public static async Task<List<TodoModel>> GetTodoFromFile(string filePath, string rootDir) {
         List<TodoModel> FileTodos = [];
         try {
@@ -17,19 +18,27 @@ public class TodoFunctions {
                 var match = Regex.Match(line, TodoRegex);
                 if(match.Success) {
                     var rawPrefix = match.Groups[1].Value.Trim();
-
+                    var rawidString = match.Groups[3].Value.Replace("#", "").Replace("(", "").Replace(")", "");
+                    if(!int.TryParse(rawidString, out int rawId)) rawId = 0;
                     TodoModel model = new(){
                         LineNumber = lineNumber,
                         FilePath = filePath.Replace(rootDir+Path.DirectorySeparatorChar.ToString(), ""),
                         FullLine = match.Value,
                         Prefix = (rawPrefix.Length > TodoModel.MAX_PREFIX_LEN) ? rawPrefix[..TodoModel.MAX_PREFIX_LEN] : rawPrefix,
                         Keyword = match.Groups[2].Value,
-                        Id = match.Groups[3].Value,
+                        Id = rawId,
                         Title = match.Groups[4].Value,
                         //TODO(#148): implement body collection
                         Body = string.Empty,
                         State = string.Empty
                     };
+                    if(!ValidPrefix.Contains(model.Prefix.Trim())) {
+                        model.Prefix = "";
+                    }
+                    if(model.Title.Length < 5) {
+                        lineNumber++;
+                        continue;
+                    }
                     FileTodos.Add(model);
                 }
                 lineNumber++;
@@ -57,6 +66,20 @@ public class TodoFunctions {
                 : line)
             .ToArray();
 
+        File.WriteAllLines(model.FilePath, content);
+    }
+    public static void RemoveTodoInFile(TodoModel model) {
+        if(string.IsNullOrEmpty(model.FilePath)) {
+            Error.Write($"Unable to update Todo {model.Title} as FilePath does not exist");
+            return;
+        }
+
+        var content = File.ReadAllLines(model.FilePath)
+                .Select((line, index) => index+1 == model.LineNumber
+                    ? line.Replace(model.FullLine!, "")
+                    : line)
+                .ToArray();
+        
         File.WriteAllLines(model.FilePath, content);
     }
     public static TodoModel CreateTodo(TodoModel todo, ConfigModel config) {

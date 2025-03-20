@@ -23,10 +23,10 @@ switch(config.Command) {
     case "list":
         foreach(var todoFile in todos) {
             foreach(var todo in todoFile.Todos) {
-                if(config.ShowUnreportedOnly && !string.IsNullOrEmpty(todo.Id))
+                if(config.ShowUnreportedOnly && todo.Id > 0)
                     continue;
                 
-                Console.WriteLine(todo.FilePath + ":" + Convert.ToString(todo.LineNumber) + ": " + todo.Prefix!.Trim() + todo.Keyword!.Trim() + todo.Id + ": " + todo.Title);    
+                Console.WriteLine(todo.FilePath + ":" + Convert.ToString(todo.LineNumber) + ": " + todo.Prefix!.Trim() + todo.Keyword!.Trim() + (todo.Id > 0 ? "(#"+todo.Id+")" : "") + ": " + todo.Title);    
             }
         }
         break;
@@ -40,7 +40,7 @@ switch(config.Command) {
             Error.Critical("No Github Api Key found.");
         }
         foreach(var todoFile in todos) {
-            foreach(var todo in todoFile.Todos.Where(t => string.IsNullOrEmpty(t.Id))) {
+            foreach(var todo in todoFile.Todos.Where(t => t.Id == 0)) {
                 string? reply = string.Empty;
                 
                 while(string.IsNullOrEmpty(reply)) {
@@ -52,10 +52,10 @@ switch(config.Command) {
                     continue;
                 }
                 Console.WriteLine("Creating TODO...");
-                if (string.IsNullOrEmpty(todo.Id)) {
+                if (todo.Id == 0) {
                     var res = TodoFunctions.CreateTodo(todo, config);
 
-                    if (string.IsNullOrEmpty(res.Id)) {
+                    if (res.Id == 0) {
                         continue;
                     }
 
@@ -74,12 +74,28 @@ switch(config.Command) {
         ConfigFunctions.SetConfig(config);
         break;
     case "prune":
-        config.GithubEndpoint = FileFunctions.GetGithubEndpoint(config.RootDirectory);
+        config.GithubEndpoint = FileFunctions.GetGithubEndpoint(config.RootDirectory) + "?state=closed";
         if(string.IsNullOrEmpty(config.GithubEndpoint)) {
             Error.Critical("Unable to retrieve endpoint for Api");
         }
 
-        gh.GetAllGithubIssues(config);
+        var issues = gh.GetAllGithubIssues(config);
+        foreach(var todoFiles in todos) {
+            foreach(var todo in todoFiles.Todos.Where(t => t.Id != 0)) {
+                if(issues.Any(i => i.Id == todo.Id)) {
+                    string reply = string.Empty;
+                    while(string.IsNullOrEmpty(reply)) {
+                        Console.Write($"Found issue #{todo.Id} in closed state. Attempt to cleanup files? (Y/N): ");
+                        reply = Console.ReadLine()!;
+                    }
+                    if(!reply.Equals("Y", StringComparison.CurrentCultureIgnoreCase)) {
+                       continue;
+                    }
+                    
+                    TodoFunctions.RemoveTodoInFile(todo);
+                }
+            }
+        }
         break;
     default:
         Error.Critical($"Command not implemented: {config.Command}");
