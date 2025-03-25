@@ -86,4 +86,9 @@ public class TodoFunctions {
         GithubRepository ghRepo = new();
         return ghRepo.CreateTodoOnGithub(todo, config.GithubApiKey, config.GithubEndpoint);
     }
+    public static void CommitTodo(TodoModel todo) {
+        SystemRepository.ExecuteGitCommand($"add {todo.FilePath}");
+        SystemRepository.ExecuteGitCommand($"commit -m \"Added TODO #{todo.Id}\"");
+        SystemRepository.ExecuteGitCommand("git push");
+    }
 }

@@ -9,4 +9,5 @@ public class ConfigModel {
     public string Command { get; set; } = "list";
     public bool ShowUnreportedOnly { get; set; } = false;
     public HashSet<string> ExcludedDirs { get; set; } = [];
+    public bool NoAutoCommit { get; set; } = false;
 }

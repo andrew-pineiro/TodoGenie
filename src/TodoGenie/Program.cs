@@ -63,6 +63,9 @@ switch(config.Command) {
                     
                     TodoFunctions.UpdateTodoInFile(res);
                     Console.WriteLine($"Updated TODO in File {res.FilePath}");
+                    if(!config.NoAutoCommit) {
+                        TodoFunctions.CommitTodo(todo);
+                    }
                 }
             }
         }
@@ -93,6 +96,9 @@ switch(config.Command) {
                     }
                     
                     TodoFunctions.RemoveTodoInFile(todo);
+                    if(!config.NoAutoCommit) {
+                        TodoFunctions.CommitTodo(todo);
+                    }
                 }
             }
         }
