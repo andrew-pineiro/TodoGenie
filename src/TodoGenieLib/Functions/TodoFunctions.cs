@@ -26,7 +26,6 @@ public class TodoFunctions {
                         Keyword = match.Groups[2].Value,
                         Id = rawId,
                         Title = match.Groups[4].Value,
-                        //TODO(#148): implement body collection
                         State = string.Empty
                     };
                     if(!ValidPrefix.Contains(model.Prefix.Trim())) {
@@ -38,6 +37,7 @@ public class TodoFunctions {
                     int tempBodyIndex = i+1;
                     int bodyCount = 0;
                     while (SystemRepository.TryGetValue(contents, tempBodyIndex, out string val)
+                            && !string.IsNullOrEmpty(model.Prefix) 
                             && contents[tempBodyIndex].Trim().StartsWith(model.Prefix)
                             && bodyCount < TodoModel.MAX_BODY_LEN)
                     {
