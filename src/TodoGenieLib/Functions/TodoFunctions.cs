@@ -12,16 +12,14 @@ public class TodoFunctions {
         List<TodoModel> FileTodos = [];
         try {
             var contents = await File.ReadAllLinesAsync(filePath);
-            int lineNumber = 1;
-            
-            foreach(var line in contents) {
-                var match = Regex.Match(line, TodoRegex);
+            for(int i = 0; i < contents.Length; i++) {
+                var match = Regex.Match(contents[i], TodoRegex);
                 if(match.Success) {
                     var rawPrefix = match.Groups[1].Value.Trim();
                     var rawidString = match.Groups[3].Value.Replace("#", "").Replace("(", "").Replace(")", "");
                     if(!int.TryParse(rawidString, out int rawId)) rawId = 0;
                     TodoModel model = new(){
-                        LineNumber = lineNumber,
+                        LineNumber = i+1,
                         FilePath = filePath.Replace(rootDir+Path.DirectorySeparatorChar.ToString(), ""),
                         FullLine = match.Value,
                         Prefix = (rawPrefix.Length > TodoModel.MAX_PREFIX_LEN) ? rawPrefix[..TodoModel.MAX_PREFIX_LEN] : rawPrefix,
@@ -29,19 +27,27 @@ public class TodoFunctions {
                         Id = rawId,
                         Title = match.Groups[4].Value,
                         //TODO(#148): implement body collection
-                        Body = string.Empty,
                         State = string.Empty
                     };
                     if(!ValidPrefix.Contains(model.Prefix.Trim())) {
                         model.Prefix = "";
                     }
                     if(model.Title.Length < 5) {
-                        lineNumber++;
                         continue;
+                    }
+                    int tempBodyIndex = i+1;
+                    int bodyCount = 0;
+                    while (SystemRepository.TryGetValue(contents, tempBodyIndex, out string val)
+                            && contents[tempBodyIndex].Trim().StartsWith(model.Prefix)
+                            && bodyCount < TodoModel.MAX_BODY_LEN)
+                    {
+                        model.Body.Add(val.Trim());
+                        
+                        bodyCount++;
+                        tempBodyIndex++;
                     }
                     FileTodos.Add(model);
                 }
-                lineNumber++;
             }
         } catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException) {
             Error.Write($"File not found {filePath}");

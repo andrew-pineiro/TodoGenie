@@ -27,6 +27,9 @@ switch(config.Command) {
                     continue;
                 
                 Console.WriteLine(todo.FilePath + ":" + Convert.ToString(todo.LineNumber) + ": " + todo.Prefix!.Trim() + todo.Keyword!.Trim() + (todo.Id > 0 ? "(#"+todo.Id+")" : "") + ": " + todo.Title);    
+                foreach(var line in todo.Body) {
+                    Console.WriteLine("\t\t+ {0}",  line);
+                }
             }
         }
         break;

@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 namespace TodoGenieLib.Models;
 public class TodoModel {
     public const int MAX_PREFIX_LEN = 4;
+    public const int MAX_BODY_LEN = 5;
 
     
     public int LineNumber { get; set; }
@@ -14,7 +15,7 @@ public class TodoModel {
     [JsonPropertyName("number")]
     public int Id { get; set; } 
     public required string Title { get; set; }
-    public string? Body { get; set; }
+    public List<string> Body { get; set; } = [];
     public string? State { get; set; }
     public string? IssueUrl { get; set; }
 }

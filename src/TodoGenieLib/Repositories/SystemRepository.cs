@@ -10,4 +10,12 @@ public class SystemRepository() {
         Process proc = new Process(){ StartInfo = startInfo };
         proc.Start();
     }
+    public static bool TryGetValue<T>(T[] array, int index, out T value) {
+        if (index >= 0 && index < array.Length) {
+            value = array[index];
+            return true;
+        }
+        value = default!;
+        return false;
+    } 
 }
