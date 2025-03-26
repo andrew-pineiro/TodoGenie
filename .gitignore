@@ -3,8 +3,8 @@ bin/
 obj/
 publish/
 *.csproj.user
+.vs*/
 
 # Custom
 *.secret
 build/
-.vscode/
