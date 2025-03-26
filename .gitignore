@@ -1,2 +1,10 @@
-secrets.json
-*/test_01.ps1
+# .NET things
+bin/
+obj/
+publish/
+*.csproj.user
+.vs*/
+
+# Custom
+*.secret
+build/

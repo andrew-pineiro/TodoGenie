@@ -1,29 +1,39 @@
-name: Build and Test TodoGenie
+name: TodoGenie Build and Test
+
 on:
   pull_request:
-    branches: [ "master" ]
+    branches: [ main ]
 
 jobs:
-    #TODO(#112): Get more then just the list subcommand working with actions
-    todogenie-build-linux:
-        name: Build & Test TodoGenie on Linux
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - name: Build
-              env:
-                APIKEY: ${{ secrets.APIKEY }}
-              shell: pwsh
-              run: |
-                Invoke-Expression "./build.ps1 -Subcommands List -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY -ModulePath /home/runner/.local/share/powershell/Modules"
-    todogenie-build-windows:
-        name: Build & Test TodoGenie on Windows
-        runs-on: windows-latest
-        steps:
-            - uses: actions/checkout@v4
-            - name: Build
-              env:
-                APIKEY: ${{ secrets.APIKEY }}
-              shell: pwsh
-              run: |
-                Invoke-Expression ".\build.ps1 -SubCommands List -Debug -RunTests -NoNewSession -ApiKey $env:APIKEY"
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx"
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+
