@@ -29,7 +29,7 @@ jobs:
 
       - name: Run tests
         working-directory: src/TodoGenieTests
-        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=TestResults/test_results.trx"
+        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx"
 
       - name: Upload Test Results
         if: always()
