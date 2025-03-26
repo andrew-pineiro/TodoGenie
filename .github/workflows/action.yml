@@ -28,6 +28,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Run tests
+        working-directory: src/TodoGenieTests
         run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx"
 
       - name: Upload Test Results
