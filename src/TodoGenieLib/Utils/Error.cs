@@ -24,7 +24,7 @@ public static class Error {
     public static void Write(string message) {
         message = "ERROR: " + message;
         Log(message);
-        Console.WriteLine($"{message}");
+        throw new Exception(message);
     }
     public static void Critical(string message) {
         message = "CRITICAL: " + message;

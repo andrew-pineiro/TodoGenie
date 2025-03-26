@@ -6,7 +6,7 @@ using TodoGenieLib.Utils;
 namespace TodoGenieLib.Functions;
 public class TodoFunctions {
     
-    private static readonly string TodoRegex = @"^(.*)(TODO)(.*):\s*(.*)";
+    private static readonly string TodoRegex = @"^(.*)(TODO|FIXME)(.*):\s*(.*)";
     private static readonly string[] ValidPrefix = ["//", "#", "REM", "'", "*", "<--"];
     public static async Task<List<TodoModel>> GetTodoFromFile(string filePath, string rootDir) {
         List<TodoModel> FileTodos = [];
@@ -25,8 +25,7 @@ public class TodoFunctions {
                         Prefix = (rawPrefix.Length > TodoModel.MAX_PREFIX_LEN) ? rawPrefix[..TodoModel.MAX_PREFIX_LEN] : rawPrefix,
                         Keyword = match.Groups[2].Value,
                         Id = rawId,
-                        Title = match.Groups[4].Value,
-                        State = string.Empty
+                        Title = match.Groups[4].Value
                     };
                     if(!ValidPrefix.Contains(model.Prefix.Trim())) {
                         model.Prefix = "";
@@ -34,6 +33,8 @@ public class TodoFunctions {
                     if(model.Title.Length < 5) {
                         continue;
                     }
+
+                    //BODY COLLECTION
                     int tempBodyIndex = i+1;
                     int bodyCount = 0;
                     while (SystemRepository.TryGetValue(contents, tempBodyIndex, out string val)
