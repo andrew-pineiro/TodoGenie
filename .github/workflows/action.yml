@@ -35,6 +35,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: '**/TestResults/*.trx'
+          name: test-results-${{ matrix.os }}
+          path: 'TestResults/test_results.trx'
 
