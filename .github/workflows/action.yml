@@ -29,12 +29,12 @@ jobs:
 
       - name: Run tests
         working-directory: src/TodoGenieTests
-        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx"
+        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=TestResults/test_results.trx"
 
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: '**/TestResults/*.trx'
+          path: 'TestResults/test_results.trx'
 
