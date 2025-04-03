@@ -96,6 +96,6 @@ public class TodoFunctions {
     public static void CommitTodo(TodoModel todo) {
         SystemRepository.ExecuteGitCommand($"add {todo.FilePath}");
         SystemRepository.ExecuteGitCommand($"commit -m \"Added TODO #{todo.Id}\"");
-        SystemRepository.ExecuteGitCommand("git push");
+        SystemRepository.ExecuteGitCommand("push");
     }
 }

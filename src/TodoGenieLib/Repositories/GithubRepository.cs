@@ -10,8 +10,8 @@ public class GithubRepository {
     private static readonly string BaseUrl = "https://api.github.com";
     public TodoModel CreateTodoOnGithub(TodoModel model, string apiKey, string endpoint) {
         HttpSender http = new();
-
-        string body = $"**Created On:** {DateTime.Now.Date:U} <br />**Created By:** [TodoGenie]({GithubURL}) <br /><br />**Additional Comments:** <br/> {model.Body}";
+        string rawBody = String.Join("\n", model.Body).Replace(model.Prefix!, "");
+        string body = $"**Created On:** {DateTime.Now.Date:U} <br />**Created By:** [TodoGenie]({GithubURL}) <br /><br />**Additional Comments:** <br/> {rawBody}";
         GithubModel.GithubSendModel gitModel = new() {
             Title = "[Automated] " + model.Title,
             Body = body
