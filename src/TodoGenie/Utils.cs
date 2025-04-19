@@ -56,7 +56,11 @@ public static class Utils {
                         break;
                     case "--exclude": case "-x":
                         foreach(var dir in args[i+1].Split(',')) {
-                            config.ExcludedDirs.Add(dir);
+                            if(dir.EndsWith('/') || dir.EndsWith('\\')) {
+                                config.ExcludedDirs.Add(dir[..^1]);
+                            } else {
+                                config.ExcludedDirs.Add(dir);
+                            }
                         }
                         break;
                     case "--noautocommit": case "-n":
