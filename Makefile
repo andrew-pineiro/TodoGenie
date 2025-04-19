@@ -10,6 +10,11 @@ build:
 	@rm $(BUILD_DIR)/$(OS)/*.pdb -f
 	@echo "++ Successfully built TodoGenie"
 
+test:
+	@echo "++ Running TodoGenie Tests..."
+	dotnet test
+	@echo "++ TodoGenie Tests Completed"
+
 deploy: build
 	@echo "++ Deploying TodoGenie..."
 	@sudo cp $(BUILD_DIR)/$(OS)/TodoGenie /usr/local/bin/todogenie
