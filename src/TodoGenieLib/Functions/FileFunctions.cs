@@ -40,12 +40,13 @@ public class FileFunctions {
     private static bool IsExcluded(string fullPath, HashSet<string> excludedDirectories)
     {
         DirectoryInfo dir = new(fullPath);
-
         while (dir != null)
         {
-            if (excludedDirectories.Any(e => e.Contains(dir.Name)))
+            //TODO: work on fixing excluded directories that are not in the root directory.
+            if (excludedDirectories.Any(e => e.Equals(dir.Name) 
+                || fullPath.Replace(Environment.CurrentDirectory, "")[1..].StartsWith(e)))
                 return true;
-
+            
             dir = dir.Parent!;
         }
 
@@ -83,7 +84,12 @@ public class FileFunctions {
                 if(token.StartsWith('#') || token.StartsWith('!') || string.IsNullOrEmpty(token)) {
                     continue;
                 }
-                ignoredFiles.Add(token.Replace("/", ""));
+                var val = token;
+                if(val.EndsWith('/'))
+                {
+                    val = val[..^1];
+                }
+                ignoredFiles.Add(val);
             }
         }
         return ignoredFiles;
@@ -95,7 +101,7 @@ public class FileFunctions {
         var ignoredFiles = CheckGitIgnore(dir);
 
         ignoredFiles.UnionWith(excludedDirs);
-
+        
         var files = EnumerateFiles(dir, ignoredFiles);
         return files;
     }
