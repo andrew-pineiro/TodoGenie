@@ -47,7 +47,7 @@ public class TodoFunctionsTests
         string path = Path.Combine(_rootPath, fileName);
         List<TodoModel> todos = await TodoFunctions.GetTodoFromFile(path, _rootPath);
 
-        Assert.True(todos.Where(t => t.Id == 0).Count() == 1);
+        Assert.True(todos.Count(t => t.Id == 0) == 1);
 
         foreach (var todo in todos.Where(t => t.Id == 0))
         {
@@ -63,7 +63,7 @@ public class TodoFunctionsTests
         string path = Path.Combine(_rootPath, fileName);
         List<TodoModel> todos = await TodoFunctions.GetTodoFromFile(path, _rootPath);
 
-        Assert.True(todos.Where(t => t.Id > 0).Count() == 1);
+        Assert.True(todos.Count(t => t.Id > 0) == 1);
 
         foreach (var todo in todos.Where(t => t.Id > 0))
         {

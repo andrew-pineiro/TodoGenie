@@ -21,7 +21,7 @@ public class FileFunctions {
         {
             foreach (var subDir in Directory.GetDirectories(directory))
             {
-                if (!IsExcluded(subDir, excludedDirectories))
+                if (!IsExcluded(Path.GetFullPath(subDir), excludedDirectories))
                 {
                     TraverseDirectory(subDir, excludedDirectories, fileCollection);
                 }
@@ -37,17 +37,23 @@ public class FileFunctions {
         }
     }
 
-    private static bool IsExcluded(string fullPath, HashSet<string> excludedDirectories)
+    private static bool IsExcluded(string path, HashSet<string> excludedDirectories)
     {
-        DirectoryInfo dir = new(fullPath);
-        while (dir != null)
+        var normalized = path.Replace('\\', '/');
+        foreach (var pattern in excludedDirectories)
         {
-            //TODO: work on fixing excluded directories that are not in the root directory.
-            if (excludedDirectories.Any(e => e.Equals(dir.Name) 
-                || fullPath.Replace(Environment.CurrentDirectory, "")[1..].StartsWith(e)))
-                return true;
-            
-            dir = dir.Parent!;
+            if (pattern.Trim().EndsWith('/'))
+            {
+                Console.WriteLine(pattern);
+                var dirName = pattern.TrimEnd('/');
+                
+                var segments = normalized.Split('/');
+                if (segments.Any(s =>
+                    s.Equals(dirName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -103,6 +109,11 @@ public class FileFunctions {
         ignoredFiles.UnionWith(excludedDirs);
         
         var files = EnumerateFiles(dir, ignoredFiles);
+        Console.WriteLine("----------------------------------");
+        foreach(var file in files)
+        {
+            Console.WriteLine(file);
+        }
         return files;
     }
 

@@ -1,32 +1,32 @@
 BUILD_DIR=build
 SRC_DIR=src
 OS ?= linux
-
+APP=TodoGenie
 .PHONY: build deploy test
 
 clean:
 ifeq ($(OS), win)
-	@del $(BUILD_DIR)\$(OS)\TodoGenie.pdb /f
+	@del $(BUILD_DIR)\$(OS)\$(APP).pdb /f
 else
-	@rm $(BUILD_DIR)/$(OS)/TodoGenie.pdb -f
+	@rm $(BUILD_DIR)/$(OS)/$(APP).pdb -f
 endif
 
 build:
-	@echo "++ Building TodoGenie..."
-	dotnet publish $(SRC_DIR)/TodoGenie/TodoGenie.csproj --self-contained /p:PublishSingleFile=true -o $(BUILD_DIR)/$(OS) --os $(OS) -c Release
-	@echo "++ Successfully built TodoGenie"
+	@echo "++ Building $(APP)..."
+	dotnet publish $(SRC_DIR)/$(APP)/$(APP).csproj --self-contained /p:PublishSingleFile=true -o $(BUILD_DIR)/$(OS) --os $(OS) -c Release
+	@echo "++ Successfully built $(APP)"
 
 test:
-	@echo "++ Running TodoGenie Tests..."
+	@echo "++ Running $(APP) Tests..."
 	dotnet test
-	@echo "++ TodoGenie Tests Completed"
+	@echo "++ $(APP) Tests Completed"
 
 deploy: build clean
-	@echo "++ Deploying TodoGenie..."
+	@echo "++ Deploying $(APP)..."
 ifeq ($(OS), win)
-	@xcopy $(BUILD_DIR)\$(OS)\TodoGenie.exe 'C:\users\Chill\Applications\' /D /Y
+	@xcopy $(BUILD_DIR)\$(OS)\$(APP).exe 'C:\users\Chill\Applications\' /D /Y
 else
-	@sudo cp $(BUILD_DIR)/$(OS)/TodoGenie /usr/local/bin/todogenie
+	@sudo cp $(BUILD_DIR)/$(OS)/$(APP) /usr/local/bin/$(APP)
 endif
-	@echo "++ Sucessfully deployed. Type \`todogenie\` to start"
+	@echo "++ Sucessfully deployed. Type \`$(APP)\` to start"
 
